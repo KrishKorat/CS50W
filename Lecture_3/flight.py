@@ -25,3 +25,12 @@ for person in people:
     print(f"Added {person} to flight successfully")
   else:
     print(f"No seats availabe for {person}")
+
+
+
+'''
+Added Harry to flight successfully
+Added Ron to flight successfully
+Added Hermione to flight successfully
+No seats availabe for Ginny
+'''

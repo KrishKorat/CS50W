@@ -7,3 +7,8 @@ class Point():
 p = Point(5, 10)
 print(p.x)
 print(p.y)
+
+'''
+5
+10
+'''
