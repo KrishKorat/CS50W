@@ -21,9 +21,9 @@
       width: 200px;
     }
 
-    /* form {
-      width: 975px;
-    } */
+    form {
+      width: 700px;
+    }
 
     h1 {
       margin-bottom: 40px;
@@ -42,16 +42,9 @@
       font-weight: bold;
     }
 
-    /* .lbl1 {
-      font-size: 14px;
-      min-width: 400px;
-      margin-left: 10px;
-    } */
-
     .form-row input[type="text"] {
-      /* flex: 1; */
+      flex: 1;
       height: 35px;
-      width: 400px;
       padding: 0 10px;
       font-size: 14px;
     }
@@ -73,26 +66,25 @@
 
     <div class="form-row">
       <label for="as_q">All these words:</label>
-      <input type="text" id="as_q" name="as_q" />
-      <!-- <label class="lbl1">Type the important words: tri-colour rat terrier</label> -->
+      <input type="text" id="as_q" name="as_q" autocomplete="off" />
     </div>
 
     <div class="form-row">
       <label for="as_epq">This exact or phrase:</label>
-      <input type="text" id="as_epq" name="as_epq" />
+      <input type="text" id="as_epq" name="as_epq" autocomplete="off" />
     </div>
 
     <div class="form-row">
       <label for="as_oq">Any of these words:</label>
-      <input type="text" id="as_oq" name="as_oq" />
+      <input type="text" id="as_oq" name="as_oq" autocomplete="off" />
     </div>
 
     <div class="form-row">
       <label for="as_eq">None of these words:</label>
-      <input type="text" id="as_eq" name="as_eq" />
+      <input type="text" id="as_eq" name="as_eq" autocomplete="off" />
     </div>
 
-    <input class="btn btn-primary" type="submit" value="Advanced Search">
+    <input class="btn btn-primary d-flex ml-auto" type="submit" value="Advanced Search">
   </form>
 
 </body>
