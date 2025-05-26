@@ -1,33 +1,83 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Advanced Search</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Google Advanced Search</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 50px;
+    }
+    .top-right {
+      position: absolute;
+      top: 20px;
+      right: 30px;
+    }
+    .top-right a {
+      text-decoration: none;
+      color: #1a0dab;
+    }
+    h1 {
+      margin-bottom: 30px;
+    }
+    form {
+      max-width: 700px;
+    }
+    .form-row {
+      display: flex;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    .form-row label {
+      width: 250px;
+      font-weight: bold;
+    }
+    .form-row input[type="text"] {
+      flex: 1;
+      height: 35px;
+      padding: 0 10px;
+      font-size: 14px;
+    }
+    input[type="submit"] {
+      margin-top: 30px;
+      background-color: #4d90fe;
+      color: white;
+      padding: 10px 20px;
+      border: none;
+      font-size: 14px;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+  </style>
 </head>
 <body>
-
-  <div class="top-links">
-    <a href="index.html">Back to Google Search</a>
+  <div class="top-right">
+    <a href="index.html">Google Search</a>
   </div>
+  <h1>Advanced Search</h1>
+  <form action="https://www.google.com/search">
+    <div class="form-row">
+      <label for="as_q">All these words:</label>
+      <input type="text" id="as_q" name="as_q" />
+    </div>
 
-  <form action="https://www.google.com/search" method="GET" class="advanced-form">
-    <h2>Advanced Search</h2>
+    <div class="form-row">
+      <label for="as_epq">This exact word or phrase:</label>
+      <input type="text" id="as_epq" name="as_epq" />
+    </div>
 
-    <label>All these words:</label>
-    <input type="text" name="as_q"><br>
+    <div class="form-row">
+      <label for="as_oq">Any of these words:</label>
+      <input type="text" id="as_oq" name="as_oq" />
+    </div>
 
-    <label>This exact word or phrase:</label>
-    <input type="text" name="as_epq"><br>
+    <div class="form-row">
+      <label for="as_eq">None of these words:</label>
+      <input type="text" id="as_eq" name="as_eq" />
+    </div>
 
-    <label>Any of these words:</label>
-    <input type="text" name="as_oq"><br>
-
-    <label>None of these words:</label>
-    <input type="text" name="as_eq"><br>
-
-    <input type="submit" value="Advanced Search" class="blue-button">
+    <input type="submit" value="Advanced Search" />
   </form>
-
 </body>
 </html>
