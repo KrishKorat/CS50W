@@ -1,0 +1,12 @@
+pip3 install Django
+
+
+django-admin startproject lecture3
+
+alt : python -m django startproject lecture3
+
+
+python -m django startapp hello
+
+
+python manage.py runserver
