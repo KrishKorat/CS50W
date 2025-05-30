@@ -1,4 +1,5 @@
-from django.shortcuts import render
+from django.shortcuts import HttpResponseRedirect, render
+from django.urls import reverse
 from markdown2 import markdown
 
 from . import util
@@ -22,5 +23,22 @@ def entry(request, title):
         "title": title,
         "content": markdown(content)
     })
+
+
+
+def search(request):
+    query = request.GET.get("q")
+    entries = util.list_entries()
+
+    if util.get_entry(query):
+        return HttpResponseRedirect(reverse("entry", args=[query]))
+    
+    results = [entry for entry in entries if query.lower() in entry.lower()]
+
+    return render(request, "encyclopedia/search.html", {
+        "results": results,
+        "query": query
+    })
+
 
 
