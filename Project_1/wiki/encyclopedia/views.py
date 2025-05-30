@@ -42,3 +42,17 @@ def search(request):
 
 
 
+def create(request):
+    if request.method == "POST":
+        title = request.POST["title"]
+        content = request.POST["content"]
+        if util.get_entry(title):
+            return render(request, "encyclopedia/error.html", {
+                "message": "Entry already exists."
+            })
+        
+        util.save_entry(title, content)
+        return HttpResponseRedirect(reverse("entry", args=[title]))
+    
+    return render(request, "encyclopedia/create.html")
+

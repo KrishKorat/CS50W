@@ -1,0 +1,38 @@
+{% extends "encyclopedia/layout.html" %}
+
+{% block title %}
+  Create new page
+{% endblock %}
+
+
+{% block body %}
+
+  <h2>Create new page</h2>
+
+  {% if error %}
+    {{ error }}
+  {% endif %}
+
+  <form action="{% url 'create' %}" method="POST">
+    {% csrf_token %}
+
+    <div>
+      <label for="title">
+        <strong>Title:</strong>
+      </label> <br>
+      <input type="text" id="title" name="title" required>
+    </div>
+
+    <br>
+    <div>
+      <label for="content">
+        <strong>Content (in markdown):</strong>
+      </label> <br>
+      <textarea id="content" name="content" rows="10" cols="60" required></textarea>
+    </div>
+
+    <br>
+    <button type="submit">Create Page</button>
+  </form>
+
+{% endblock %}
