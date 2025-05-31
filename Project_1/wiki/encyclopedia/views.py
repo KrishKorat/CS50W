@@ -16,9 +16,9 @@ def entry(request, title):
     content = util.get_entry(title)
 
     if content is None:
-        return render(request, "encyclopedia/error.html", {
-            "title": "Error",
-            "message": "Entry not found."
+        return render(request, "encyclopedia/errorSearch.html", {
+            "title": title,
+            "message": "Error",
         })
     return render(request, "encyclopedia/entry.html", {
         "title": title,
