@@ -37,6 +37,7 @@ def search(request):
     results = [entry for entry in entries if query.lower() in entry.lower()]
 
     return render(request, "encyclopedia/search.html", {
+        "title": query,
         "results": results,
         "query": query
     })
