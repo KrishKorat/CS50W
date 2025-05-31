@@ -1,6 +1,7 @@
 from django.shortcuts import HttpResponseRedirect, render
 from django.urls import reverse
 from markdown2 import markdown
+import random
 
 from . import util
 
@@ -69,3 +70,10 @@ def edit(request, title):
         "title": title,
         "content": content
     })
+
+
+
+def random_page(request):
+    entries = util.list_entries()
+    title = random.choice(entries)
+    return HttpResponseRedirect(reverse("entry", args=[title]))
