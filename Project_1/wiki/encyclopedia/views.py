@@ -68,7 +68,7 @@ def edit(request, title):
     content = util.get_entry(title)
     return render(request, 'encyclopedia/edit.html', {
         "title": title,
-        "content": content
+        "content": content.rstrip()
     })
 
 
