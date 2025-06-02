@@ -10,3 +10,11 @@ python -m django startapp hello
 
 
 python manage.py runserver
+
+
+
+python manage.py makemigrations
+python mange.py migrate
+
+
+python mange.py shell
