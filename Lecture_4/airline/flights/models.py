@@ -79,3 +79,28 @@ class Flight(models.Model):
 >>> lhr.arrivals.all()
 <QuerySet [<Flight: 1: New York (JFK) to London (LHR)>]>
 '''
+
+
+'''
+>>> Airport.objects.all()
+<QuerySet [<Airport: New York (JFK)>, <Airport: London (LHR)>, <Airport: Paris (CDG)>, <Airport: Tokyo (NRT)>]>
+
+>>> Airport.objects.filter(city="New York")
+<QuerySet [<Airport: New York (JFK)>]>
+
+>>> Airport.objects.filter(city="New York").first()
+<Airport: New York (JFK)>
+
+>>> Airport.objects.get(city="New York")        
+<Airport: New York (JFK)>
+'''
+
+'''
+----------------------------------------------------------------------- Adding 2nd flight
+>>> jfk = Airport.objects.get(city="New York")
+>>> cdg = Airport.objects.get(city="Paris")
+>>> cdg
+<Airport: Paris (CDG)>
+>>> f = Flight(origin=jfk, destination=cdg, duration=435)
+>>> f.save()
+'''
