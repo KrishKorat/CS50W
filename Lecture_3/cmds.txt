@@ -17,4 +17,4 @@ python manage.py makemigrations
 python mange.py migrate
 
 
-python mange.py shell
+python manage.py shell
