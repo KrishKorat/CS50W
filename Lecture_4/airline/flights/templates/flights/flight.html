@@ -2,12 +2,24 @@
 
 {% block body %}
 
-  <h1>Fligth: {{ flight_id }}</h1>
+  <h1>Flight: {{ flight_id }}</h1>
 
   <ul>
     <li>Origin: {{ flight.origin }}</li>
     <li>Destination: {{ flight.destination }}</li>
     <li>Duration: {{ flight.duration }}</li>
   </ul>
+
+  <h2>Passengers</h2>
+
+  <ul>
+    {% for passenger in passengers %}
+      <li>{{ passenger }}</li>
+    {% empty %}
+      <li>No passenger.</li>
+    {% endfor %}
+  </ul>
+
+  <a href="{% url 'index' %}">All Flights</a>
 
 {% endblock %}
