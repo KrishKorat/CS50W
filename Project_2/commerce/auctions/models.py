@@ -17,6 +17,7 @@ class Listing(models.Model):
     is_active = models.BooleanField(default=True)
     winner = models.ForeignKey(User, blank=True, null=True, on_delete=models.SET_NULL, related_name="won_listing")
     watchlist = models.ManyToManyField(User, blank=True, related_name="watchlist")
+    created_time = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):
         return f"{self.title} - Active: {self.is_active}"

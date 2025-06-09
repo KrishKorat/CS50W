@@ -3,12 +3,16 @@ from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
+from .models import Listing
 
 from .models import User
 
 
 def index(request):
-    return render(request, "auctions/index.html")
+    active_listing = Listing.objects.filter(is_active=True)
+    return render(request, "auctions/index.html", {
+        "listings": active_listing
+    })
 
 
 def login_view(request):
