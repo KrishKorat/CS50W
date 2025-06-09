@@ -4,8 +4,11 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from .models import Listing
+from .forms import ListingForm
 
 from .models import User
+from django.contrib.auth.decorators import login_required
+
 
 
 def index(request):
@@ -13,6 +16,7 @@ def index(request):
     return render(request, "auctions/index.html", {
         "listings": active_listing
     })
+
 
 
 def login_view(request):
@@ -35,9 +39,11 @@ def login_view(request):
         return render(request, "auctions/login.html")
 
 
+
 def logout_view(request):
     logout(request)
     return HttpResponseRedirect(reverse("index"))
+
 
 
 def register(request):
@@ -65,3 +71,23 @@ def register(request):
         return HttpResponseRedirect(reverse("index"))
     else:
         return render(request, "auctions/register.html")
+
+
+
+@login_required
+def create_listing(request):
+
+    if request.method == "POST":
+        form = ListingForm(request.POST)
+
+        if form.is_valid():
+            listing = form.save(commit=False)
+            listing.creator = request.user
+            listing.save()
+            return HttpResponseRedirect(reverse("index"))
+    else:
+        form = ListingForm()
+    
+    return render(request, "auctions/create_listing.html", {
+        "form": form
+    })
