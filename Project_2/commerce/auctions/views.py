@@ -91,3 +91,22 @@ def create_listing(request):
     return render(request, "auctions/create_listing.html", {
         "form": form
     })
+
+
+
+
+def listing(request, listing_id):
+    listing = Listing.objects.get(pk=listing_id)
+    comments = listing.comments.all()
+    # user_is_watching = request.user in listing.watchlist.all()
+    highest_bid = listing.bids.order_by('-amount').first()
+    highest_bidder = highest_bid.bidder if highest_bid else None
+
+
+
+    return render(request, 'auctions/listing.html', {
+        "listing": listing,
+        "comment": comments,
+        "highest_bidder": highest_bidder
+        
+    })

@@ -38,7 +38,7 @@ class Bid(models.Model):
 
 class Comment(models.Model):
     
-    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="comment")
+    listing = models.ForeignKey(Listing, on_delete=models.CASCADE, related_name="comments")
     author = models.ForeignKey(User, on_delete=models.CASCADE, related_name="comment")
     content = models.TextField()
     timestamp = models.DateTimeField(auto_now_add=True)
