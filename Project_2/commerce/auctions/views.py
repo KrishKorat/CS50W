@@ -177,9 +177,19 @@ def watchlist(request):
 
 
 
-def category(request):
+def categories(request):
 
     categories = Listing.objects.values_list("category", flat=True).distinct()
-    return render(request, "auctions/category.html", {
+    return render(request, "auctions/categories.html", {
         "categories": categories
+    })
+
+
+
+def category_listing(request, category_name):
+    listings = Listing.objects.filter(category= category_name, is_active=True)
+
+    return render(request, "auctions/category_listing.html", {
+        "category": category_name,
+        "listings": listings
     })

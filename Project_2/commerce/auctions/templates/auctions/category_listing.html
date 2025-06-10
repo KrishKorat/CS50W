@@ -1,0 +1,33 @@
+{% extends "auctions/layout.html" %}
+
+{% block title %}{{ category }} Listing{% endblock %}
+
+{% block body %}
+
+  <h2>{{ category }} Items</h2>
+  
+  
+  {% for listing in listings %}
+
+      <div style="border: 1px solid #ccc; padding: 10px; margin-bottom: 10px;" class="container-fluid">
+          
+          <div class="row">
+
+              <div class="col-lg-4">
+                  {% if listing.image_url %}
+                      <img src="{{ listing.image_url }}" alt="image" style="max-height: 150px; max-width: 300px;display: block; margin-left: auto; margin-right: auto;">
+                  {% endif %}
+              </div>
+
+              <div class="col-lg-8">
+                  <h3><a href="{% url 'listing' listing.id %}">{{ listing.title }}</a></h3>
+
+                  <p><strong>Price: ${{ listing.bids.amount|default:listing.starting_bid }} </strong></p>
+
+                  <p>{{ listing.description|truncatechars:100 }}</p>
+                  <p style="font-size: 14px; color: grey;">Created {{ listing.created_time }}</p>
+              </div>
+          </div>
+      </div>
+  {% endfor %}
+{% endblock %}
