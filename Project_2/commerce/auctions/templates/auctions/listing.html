@@ -35,8 +35,15 @@
   {% endif %}
 
   <p>{{ listing.description }}</p>
-  <h4>${{ highest_bid.amount|default:listing.starting_bid }}</h4>
-  <p>{{ listing.bid.count }} bid(s) so far.
+
+  <h4>
+    {% if highest_bid %}
+      ${{ listing.starting_bid|floatformat:2 }}, <span style="color: grey; font-size: 20px;">(Current: ${{ highest_bid.amount|floatformat:2 }})</span>
+    {% else %}
+      ${{ listing.starting_bid|floatformat:2 }}
+    {% endif %}
+  </h4>
+  <p>{{ listing.bids.count }} bid(s) so far.
     {% if user.is_authenticated and user == highest_bidder %}
       Your bid is the highest bid.
     {% endif %}
@@ -86,6 +93,7 @@
 
 
 
+  <h5 class="mt-5">Comments:</h5>
   {% if user.is_authenticated %}
     <form action="{% url 'listing' listing.id %}" method="POST" class="mb-4">
       {% csrf_token %}
@@ -98,8 +106,6 @@
   {% endif %}
 
 
-
-  <h5>Comments:</h5>
   <ul class="list-group mb-3">
     {% for comment in comments %}
       <li class="list-group-item">

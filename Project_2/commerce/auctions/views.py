@@ -5,6 +5,8 @@ from django.shortcuts import render, redirect
 from django.urls import reverse
 from .models import Listing, Bid, Comment
 from .forms import ListingForm
+from decimal import Decimal
+
 
 from .models import User
 from django.contrib.auth.decorators import login_required
@@ -97,7 +99,7 @@ def create_listing(request):
 
 def listing(request, listing_id):
     listing = Listing.objects.get(pk=listing_id)
-    comments = listing.comments.all()
+    comments = listing.comments.order_by("-timestamp")
     # user_is_watching = request.user in listing.watchlist.all()
     highest_bid = listing.bids.order_by('-amount').first()
     highest_bidder = highest_bid.bidder if highest_bid else None
@@ -109,7 +111,7 @@ def listing(request, listing_id):
             amount = float(request.POST["bid_amount"])
             min_bid = listing.starting_bid
             if highest_bid:
-                min_bid = max(listing.starting_bid, highest_bid.amount + 0.01)
+                min_bid = max(listing.starting_bid, highest_bid.amount + Decimal(0.01))
             
             if amount >= min_bid:
                 Bid.objects.create(
@@ -120,9 +122,10 @@ def listing(request, listing_id):
             else:
                 return render(request, 'auctions/listing.html', {
                     "listing": listing,
-                    "comment": comments,
+                    "comments": comments,
+                    "highest_bid": highest_bid,
                     "highest_bidder": highest_bidder,
-                    "error": f"Your bid must be at least {min_bid}"
+                    "error": f"Your bid must be at least {min_bid:.2f}"
                 })
         
         elif "add_watchlist" in request.POST:
@@ -156,5 +159,6 @@ def listing(request, listing_id):
     return render(request, 'auctions/listing.html', {
         "listing": listing,
         "comments": comments,
+        "highest_bid": highest_bid,
         "highest_bidder": highest_bidder
     })
