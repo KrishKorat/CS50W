@@ -168,9 +168,18 @@ def listing(request, listing_id):
 
 
 def watchlist(request):
-    # categories = Listing.objects.values_list("category", flat=True).distinct()
 
     user_watchlist = request.user.watchlist.all()
     return render(request, "auctions/watchlist.html", {
         "watchlist": user_watchlist
+    })
+
+
+
+
+def category(request):
+
+    categories = Listing.objects.values_list("category", flat=True).distinct()
+    return render(request, "auctions/category.html", {
+        "categories": categories
     })
