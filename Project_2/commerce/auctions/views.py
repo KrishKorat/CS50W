@@ -1,9 +1,9 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
 from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from django.urls import reverse
-from .models import Listing
+from .models import Listing, Bid, Comment
 from .forms import ListingForm
 
 from .models import User
@@ -103,10 +103,58 @@ def listing(request, listing_id):
     highest_bidder = highest_bid.bidder if highest_bid else None
 
 
+    if request.method == "POST":
+
+        if "place_bid" in request.POST:
+            amount = float(request.POST["bid_amount"])
+            min_bid = listing.starting_bid
+            if highest_bid:
+                min_bid = max(listing.starting_bid, highest_bid.amount + 0.01)
+            
+            if amount >= min_bid:
+                Bid.objects.create(
+                    listing = listing,
+                    bidder = request.user,
+                    amount = amount
+                )
+            else:
+                return render(request, 'auctions/listing.html', {
+                    "listing": listing,
+                    "comment": comments,
+                    "highest_bidder": highest_bidder,
+                    "error": f"Your bid must be at least {min_bid}"
+                })
+        
+        elif "add_watchlist" in request.POST:
+            listing.watchlist.add(request.user)
+        
+        elif "remove_watchlist" in request.POST:
+            listing.watchlist.remove(request.user)
+
+        
+        elif "close_auction" in request.POST and request.user == listing.creator:
+            listing.is_active = False
+            if highest_bid:
+                listing.winner = highest_bid.bidder
+            listing.save()
+        
+
+        elif "add_comment" in request.POST:
+            content = request.POST["comment"]
+            Comment.objects.create(
+                listing = listing,
+                author = request.user,
+                content = content
+            )
+        
+
+        return redirect('listing', listing_id=listing.id)
+
+
+
 
     return render(request, 'auctions/listing.html', {
         "listing": listing,
-        "comment": comments,
+        "comments": comments,
         "highest_bidder": highest_bidder
-        
     })
