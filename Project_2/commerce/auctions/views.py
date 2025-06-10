@@ -125,7 +125,7 @@ def listing(request, listing_id):
                     "comments": comments,
                     "highest_bid": highest_bid,
                     "highest_bidder": highest_bidder,
-                    "error": f"Your bid must be at least {min_bid:.2f}"
+                    "error": f"Your bid must be at least ${min_bid:.2f}"
                 })
         
         elif "add_watchlist" in request.POST:
@@ -161,4 +161,16 @@ def listing(request, listing_id):
         "comments": comments,
         "highest_bid": highest_bid,
         "highest_bidder": highest_bidder
+    })
+
+
+
+
+
+def watchlist(request):
+    # categories = Listing.objects.values_list("category", flat=True).distinct()
+
+    user_watchlist = request.user.watchlist.all()
+    return render(request, "auctions/watchlist.html", {
+        "watchlist": user_watchlist
     })
