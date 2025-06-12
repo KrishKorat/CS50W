@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Task-1</title>
+</head>
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+
+    
+    let submit = document.querySelector('#submit');
+    let newTask = document.querySelector('#task');
+
+    submit.disabled = true;
+
+
+    newTask.onkeyup = () => {
+      if( newTask.value.length > 0) {
+        submit.disabled = false;
+      } else {
+        submit.disabled = true;
+      }
+    }
+
+    document.querySelector('form').onsubmit = function(event) {
+
+      const task = newTask.value;
+
+      const li = document.createElement('li');
+      li.innerHTML = task
+      
+      document.querySelector('ul').append(li); 
+
+      newTask.value = '';
+      submit.disabled = true;
+
+      // Stops form from submitting
+      return false
+    }
+    
+  });
+</script>
+<body>
+  <ul id="tasks"></ul>
+
+  <form>
+    <input name="task" id="task" type="text" autofocus autocomplete="off" placeholder="Enter task">
+    <button name="submit" id="submit" type="submit">Submit</button>
+  </form>
+</body>
+</html>
