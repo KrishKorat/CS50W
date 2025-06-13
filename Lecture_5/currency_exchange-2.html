@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Exchange-2</title>
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+      document.querySelector('form').onsubmit = function() {
+
+        fetch('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=c672d3aa671a40e7a54543e67d655536')
+        .then(response => response.json())
+        .then(data => {
+
+          const currecy = document.querySelector('#currency').value.toUpperCase();
+          const rate = Number(data.rates[currecy]);
+
+          if(rate !== NaN) {  
+            document.querySelector('#result').innerHTML = `1 USD is equals to ${rate.toFixed(2)} ${currecy}.`;
+          } else {
+            document.querySelector('#result').innerHTML = 'Invalid currency.';
+          }
+        })
+        .catch(error => {
+          console.log('Error: ', error);
+        });
+
+        return false;
+      }
+    });
+  </script>
+</head>
+<body>
+  <form>
+    <input id="currency" placeholder="Currency" type="text">
+    <input type="submit" value="exchange">
+  </form>
+
+  <div id="result"></div>
+</body>
+</html>
