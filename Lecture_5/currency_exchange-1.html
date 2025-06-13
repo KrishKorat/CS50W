@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Currency Exchange-1</title>
+  <script>
+
+    document.addEventListener('DOMContentLoaded', function() {
+
+      fetch('https://api.currencyfreaks.com/v2.0/rates/latest?apikey=c672d3aa671a40e7a54543e67d655536')
+      .then(response => response.json())
+      .then(data => {
+        // console.log(data);
+
+        const rate = Number(data.rates.EUR);
+        document.querySelector('body').innerHTML = `1 USD is equals to ${rate.toFixed(2)} EUR.`;
+      });
+
+    });
+  </script>
+</head>
+<body>
+  
+</body>
+</html>
