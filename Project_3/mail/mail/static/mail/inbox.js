@@ -26,6 +26,9 @@ function compose_email() {
   document.querySelector('#compose-body').value = '';
 }
 
+
+
+
 function load_mailbox(mailbox) {
   
   // Show the mailbox and hide other views
@@ -34,7 +37,45 @@ function load_mailbox(mailbox) {
   document.querySelector('#email-view').style.display = 'none';
 
   // Show the mailbox name
-  document.querySelector('#emails-view').innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+  const view = document.querySelector('#emails-view');
+  view.innerHTML = `<h3>${mailbox.charAt(0).toUpperCase() + mailbox.slice(1)}</h3>`;
+
+
+  // Fetching emails & rendering them as a list
+  
+  fetch(`/emails/${mailbox}`)
+  .then(response => response.json())
+  .then(emails => {
+
+    emails.forEach(email => {
+      
+      const emailDiv = document.createElement('div');
+      emailDiv.className = 'email-box';
+      emailDiv.style.border = '1px solid #ccc';
+      emailDiv.style.padding = '10px';
+      emailDiv.style.margin = '5px 0';
+      emailDiv.style.cursor = 'pointer';
+
+      emailDiv.style.backgroundColor = email.read ? '#f0f0f0' : 'white';
+
+      // What to show (From or To 's email)
+      const titleEmail = mailbox == 'sent'
+        ? `To: ${email.recipients.join(', ')}`
+        : `From: ${email.sender}`;
+
+      emailDiv.innerHTML = `
+        <span><strong>${titleEmail}</strong></span><br>
+        <span>${email.subject}</span>
+        <span style="float: right;">${email.timestamp}</span>
+      `;
+
+
+      // emailDiv.addEventListener('click', () => view_email(email_id));
+
+      view.appendChild(emailDiv);
+
+    });
+  });
 }
 
 
