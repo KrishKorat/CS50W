@@ -126,7 +126,11 @@ function view_email(id) {
   fetch(`/emails/${id}`)
   .then(response => response.json())
   .then(email => {
+    console.log("email.sender =", `"${email.sender}"`);
+console.log("user from h2 =", `"${document.querySelector('h2').innerText}"`);
     console.log('View of email:', email);
+        
+
 
     // Marking as read by changing 'read' value
     fetch(`/emails/${id}`, {
@@ -142,9 +146,35 @@ function view_email(id) {
       <p><strong>Subject:</strong> ${email.subject}</p>
       <p><strong>Timestamp:</strong> ${email.timestamp}</p>
       <hr>
-      <p>${email.body.replace('/\n/g', '<br>')}</p>
+      <p>${email.body.replace(/\n/g, '<br>')}</p>
     `;
 
     emailView.appendChild(content);
-  });
+
+
+
+
+
+    // .innerText because of jinja template string
+    if(email.sender !== document.querySelector('h2').innerText) {
+
+      console.log('hello');
+      const archiveBtn = document.createElement('button');
+      archiveBtn.className = 'btn btn-sm btn-outline-primary';
+      archiveBtn.innerHTML = email.archived ? 'Unarchive' : 'Archive';
+
+      archiveBtn.addEventListener('click', () => {
+        fetch(`/emails/${id}`, {
+          method: 'PUT',
+          body: JSON.stringify({ archived: !email.archived })
+        })
+        .then( () => load_mailbox('inbox'));
+      });
+
+      emailView.appendChild(archiveBtn);
+    }
+  })
+  .catch(error => {
+      console.error("Error fetching email:", error);
+    });
 }
