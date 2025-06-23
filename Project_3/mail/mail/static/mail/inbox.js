@@ -126,11 +126,8 @@ function view_email(id) {
   fetch(`/emails/${id}`)
   .then(response => response.json())
   .then(email => {
-    console.log("email.sender =", `"${email.sender}"`);
-console.log("user from h2 =", `"${document.querySelector('h2').innerText}"`);
     console.log('View of email:', email);
         
-
 
     // Marking as read by changing 'read' value
     fetch(`/emails/${id}`, {
@@ -145,14 +142,9 @@ console.log("user from h2 =", `"${document.querySelector('h2').innerText}"`);
       <p><strong>To:</strong> ${email.recipients.join(', ')}</p>
       <p><strong>Subject:</strong> ${email.subject}</p>
       <p><strong>Timestamp:</strong> ${email.timestamp}</p>
-      <hr>
-      <p>${email.body.replace(/\n/g, '<br>')}</p>
     `;
 
     emailView.appendChild(content);
-
-
-
 
 
     // .innerText because of jinja template string
@@ -173,8 +165,13 @@ console.log("user from h2 =", `"${document.querySelector('h2').innerText}"`);
 
       emailView.appendChild(archiveBtn);
     }
-  })
-  .catch(error => {
-      console.error("Error fetching email:", error);
-    });
+
+    const bodyOfEmail = document.createElement('div');
+    bodyOfEmail.innerHTML = `
+      <hr>
+      <p>${email.body.replace(/\n/g, '<br>')}</p>
+    `;
+
+    emailView.appendChild(bodyOfEmail);
+  });
 }
