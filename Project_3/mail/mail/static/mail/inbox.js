@@ -64,13 +64,13 @@ function load_mailbox(mailbox) {
         : `From: ${email.sender}`;
 
       emailDiv.innerHTML = `
-        <span><strong>${titleEmail}</strong></span><br>
+        <span><strong>${titleEmail}</strong></span>
         <span>${email.subject}</span>
         <span style="float: right;">${email.timestamp}</span>
       `;
 
 
-      // emailDiv.addEventListener('click', () => view_email(email_id));
+      emailDiv.addEventListener('click', () => view_email(email.id));
 
       view.appendChild(emailDiv);
 
@@ -106,5 +106,45 @@ function send_mail(event) {
     console.log(result);
 
     load_mailbox('sent');
+  });
+}
+
+
+
+
+
+function view_email(id) {
+
+  document.querySelector('#emails-view').style.display = 'none';
+  document.querySelector('#compose-view').style.display = 'none';
+  const emailView = document.querySelector('#email-view');
+
+  emailView.style.display = 'block';
+
+  emailView.innerHTML = '';
+
+  fetch(`/emails/${id}`)
+  .then(response => response.json())
+  .then(email => {
+    console.log('View of email:', email);
+
+    // Marking as read by changing 'read' value
+    fetch(`/emails/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify({ read: true })
+    });
+
+    const content = document.createElement('div');
+
+    content.innerHTML = `
+      <p><strong>From:</strong> ${email.sender}</p>
+      <p><strong>To:</strong> ${email.recipients.join(', ')}</p>
+      <p><strong>Subject:</strong> ${email.subject}</p>
+      <p><strong>Timestamp:</strong> ${email.timestamp}</p>
+      <hr>
+      <p>${email.body.replace('/\n/g', '<br>')}</p>
+    `;
+
+    emailView.appendChild(content);
   });
 }
