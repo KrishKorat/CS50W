@@ -150,7 +150,6 @@ function view_email(id) {
     // .innerText because of jinja template string
     if(email.sender !== document.querySelector('h2').innerText) {
 
-      console.log('hello');
       const archiveBtn = document.createElement('button');
       archiveBtn.className = 'btn btn-sm btn-outline-primary';
       archiveBtn.innerHTML = email.archived ? 'Unarchive' : 'Archive';
@@ -166,6 +165,29 @@ function view_email(id) {
       emailView.appendChild(archiveBtn);
     }
 
+
+
+    const replyBtn = document.createElement('button');
+    replyBtn.classList = 'btn btn-sm btn-outline-primary ml-2';
+    replyBtn.innerHTML = 'Reply';
+
+    replyBtn.addEventListener('click', () => {
+
+      compose_email();
+
+      document.querySelector('#compose-recipients').value = email.sender;
+
+      const subject = email.subject.startsWith("Re: ") ? email.subject : `Re: ${email.subject}`;
+      document.querySelector('#compose-subject').value = subject;
+
+      const quotedBody = `On ${email.timestamp}, ${email.sender} wrote: \n${email.body}\n`;
+      document.querySelector('#compose-body').value = quotedBody; 
+    });
+
+    emailView.appendChild(replyBtn);
+
+
+    // Defining the body of email
     const bodyOfEmail = document.createElement('div');
     bodyOfEmail.innerHTML = `
       <hr>
