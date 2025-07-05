@@ -7,13 +7,19 @@ from django.urls import reverse
 from .models import User, Post, Follow
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
+from django.core.paginator import Paginator
 
 
 @login_required
 def index(request):
-    posts = Post.objects.all().order_by('-timestamp')
+    all_posts = Post.objects.all().order_by('-timestamp')
+    paginator = Paginator(all_posts, 10)
+
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     return render(request, "network/index.html", {
-        "posts": posts
+        "page_obj": page_obj
     })
 
 
