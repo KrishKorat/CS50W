@@ -59,6 +59,20 @@ def profile(request, username):
 
 
 
+@login_required
+def following(request):
+
+    following_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
+
+    posts = Post.objects.filter(author__id__in=following_users).order_by('-timestamp')
+
+    return render(request, "network/following.html", {
+        "posts": posts
+    })
+
+
+
+
 
 
 def login_view(request):
