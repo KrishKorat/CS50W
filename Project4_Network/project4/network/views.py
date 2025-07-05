@@ -32,9 +32,9 @@ def new_post(request):
 def profile(request, username):
 
     profile_user = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=profile_user).order_by("-timestramp")
+    posts = Post.objects.filter(author=profile_user).order_by("-timestamp")
     followers_count = Follow.objects.filter(following=profile_user).count()
-    following_count = Follow.objects.filter(followers=profile_user).count()
+    following_count = Follow.objects.filter(follower=profile_user).count()
 
     is_following = False
     if request.user != profile_user:
