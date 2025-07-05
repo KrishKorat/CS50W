@@ -76,10 +76,14 @@ def following(request):
 
     following_users = Follow.objects.filter(follower=request.user).values_list('following', flat=True)
 
-    posts = Post.objects.filter(author__id__in=following_users).order_by('-timestamp')
+    all_posts = Post.objects.filter(author__id__in=following_users).order_by('-timestamp')
+
+    paginator = Paginator(all_posts, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
 
     return render(request, "network/following.html", {
-        "posts": posts
+        "page_obj": page_obj
     })
 
 
