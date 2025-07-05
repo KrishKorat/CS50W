@@ -24,17 +24,25 @@
     <div class="card mb-3">
         <div class="card-body">
             <h5 class="card-title">
-                <a href="{% url 'profile' post.author.username %}" style="color: black; text-decoration: none;">
+                <a href="{% url 'profile' post.author.username %}" style="color: #000000; text-decoration: none;">
                     <strong>{{ post.author }}</strong>
                 </a>
             </h5>
-            <p class="card-text">{{ post.content }}</p>
+
+            <p class="card-text" id="content-{{ post.id }}">{{ post.content }}</p>
+            <textarea class="form-control mb-2 d-none">{{ post.content }}</textarea>
+
             <p class="card-text">
                 <small class="text-muted">{{ post.timestamp }}</small>
             </p>
             <p class="card-text">
                ❤️ 0 likes 
             </p>
+
+            {% if user == post.author %}
+                <button class="btn btn-sm btn-outline-primary" onclick="editpost({{ post.id }})" id="edit-btn-{{ post.id }}">Edit</button>
+                <button class="btn btn-sm btn-success d-none" onclick="savepost({{ post.id }})" id="save-btn-{{ post.id }}">Save</button>
+            {% endif %}
         </div>
     </div>
 
@@ -65,5 +73,17 @@
             {% endif %}
         </ul>
     </nav>
+
+
+
+    <script>
+
+        function editpost(postId) {
+            document.getElementById(`content-${postId}`).classList.add('d-none');
+            document.getElementById(`textarea-${postId}`).classList.remove('d-none');
+            document.getElementById(`save-btn-${postId}`).classList.remove('d-none');
+            document.getElementById(`edit-btn-${postId}`).classList.add('d-none');
+        }
+    </script>
 
 {% endblock %}
