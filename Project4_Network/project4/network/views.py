@@ -38,9 +38,15 @@ def new_post(request):
 def profile(request, username):
 
     profile_user = get_object_or_404(User, username=username)
-    posts = Post.objects.filter(author=profile_user).order_by("-timestamp")
+    all_posts = Post.objects.filter(author=profile_user).order_by("-timestamp")
+
+    paginator = Paginator(all_posts, 10)
+    page_number = request.GET.get("page")
+    page_obj = paginator.get_page(page_number)
+
     followers_count = Follow.objects.filter(following=profile_user).count()
     following_count = Follow.objects.filter(follower=profile_user).count()
+
 
     is_following = False
     if request.user != profile_user:
@@ -57,7 +63,7 @@ def profile(request, username):
 
     return render(request, "network/profile.html", {
         "profile_user": profile_user,
-        "posts": posts,
+        "page_obj": page_obj,
         "followers_count": followers_count,
         "following_count": following_count,
         "is_following": is_following
