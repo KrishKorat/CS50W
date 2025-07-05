@@ -1,6 +1,6 @@
 from django.contrib.auth import authenticate, login, logout
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseRedirect, JsonResponse, HttpResponseBadRequest, HttpResponseForbidden
 from django.shortcuts import render
 from django.urls import reverse
 
@@ -8,6 +8,8 @@ from .models import User, Post, Follow
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.core.paginator import Paginator
+from django.views.decorators.csrf import csrf_exempt
+import json
 
 
 @login_required
@@ -85,6 +87,33 @@ def following(request):
     return render(request, "network/following.html", {
         "page_obj": page_obj
     })
+
+
+
+@login_required
+def edit_post(request, post_id):
+    
+    if request.method != 'PUT':
+        return HttpResponseBadRequest("Only PUT allowed")
+    
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Page not found"}, status=404)
+    
+
+    if post.author != request.user:
+        return HttpResponseForbidden("You can't edit this post.")
+    
+    data = json.loads(request.body)
+    new_content = data.get("contnet", "").strip()
+
+    if new_content:
+        post.content = new_content
+        post.save()
+        return JsonResponse({"message": "Post updated successfully."})
+    else:
+        return JsonResponse({"error": "Empty content not allowed"}, status=400)
 
 
 
