@@ -4,10 +4,9 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 
-from .models import Post
+from .models import User, Post, Follow
 from django.contrib.auth.decorators import login_required
-
-from .models import User
+from django.shortcuts import get_object_or_404, redirect
 
 
 @login_required
@@ -29,8 +28,34 @@ def new_post(request):
 
 
 
+@login_required
+def profile(request, username):
+
+    profile_user = get_object_or_404(User, username=username)
+    posts = Post.objects.filter(author=profile_user).order_by("-timestramp")
+    followers_count = Follow.objects.filter(following=profile_user).count()
+    following_count = Follow.objects.filter(followers=profile_user).count()
+
+    is_following = False
+    if request.user != profile_user:
+        is_following = Follow.objects.filter(follower=request.user, following=profile_user).exists()
+
+    
+    if request.method == "POST":
+        if is_following:
+            Follow.objects.filter(follower=request.user, following=profile_user).delete()
+        else:
+            Follow.objects.create(followe=request.user, following=profile_user)
+        return redirect("profile", username=username)
 
 
+    return render(request, "network/profile.html", {
+        "profile_user": profile_user,
+        "posts": posts,
+        "followers_count": followers_count,
+        "following_count": following_count,
+        "is_following": is_following
+    })
 
 
 
