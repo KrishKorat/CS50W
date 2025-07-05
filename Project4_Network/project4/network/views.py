@@ -106,7 +106,7 @@ def edit_post(request, post_id):
         return HttpResponseForbidden("You can't edit this post.")
     
     data = json.loads(request.body)
-    new_content = data.get("contnet", "").strip()
+    new_content = data.get("content", "").strip()
 
     if new_content:
         post.content = new_content

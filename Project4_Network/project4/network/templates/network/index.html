@@ -30,7 +30,7 @@
             </h5>
 
             <p class="card-text" id="content-{{ post.id }}">{{ post.content }}</p>
-            <textarea class="form-control mb-2 d-none">{{ post.content }}</textarea>
+            <textarea class="form-control mb-2 d-none" id="textarea-{{ post.id }}">{{ post.content }}</textarea>
 
             <p class="card-text">
                 <small class="text-muted">{{ post.timestamp }}</small>
@@ -40,8 +40,8 @@
             </p>
 
             {% if user == post.author %}
-                <button class="btn btn-sm btn-outline-primary" onclick="editpost({{ post.id }})" id="edit-btn-{{ post.id }}">Edit</button>
-                <button class="btn btn-sm btn-success d-none" onclick="savepost({{ post.id }})" id="save-btn-{{ post.id }}">Save</button>
+                <button class="btn btn-sm btn-outline-primary" onclick="editPost({{ post.id }})" id="edit-btn-{{ post.id }}">Edit</button>
+                <button class="btn btn-sm btn-success d-none" onclick="savePost({{ post.id }})" id="save-btn-{{ post.id }}">Save</button>
             {% endif %}
         </div>
     </div>
@@ -78,11 +78,47 @@
 
     <script>
 
-        function editpost(postId) {
+        function editPost(postId) {
             document.getElementById(`content-${postId}`).classList.add('d-none');
             document.getElementById(`textarea-${postId}`).classList.remove('d-none');
             document.getElementById(`save-btn-${postId}`).classList.remove('d-none');
             document.getElementById(`edit-btn-${postId}`).classList.add('d-none');
+        }
+
+        function savePost(postId) {
+            const textarea = document.getElementById(`textarea-${postId}`);
+            const newContent = textarea.value.trim();
+
+            fetch(`/edit/${postId}`, {
+                method: 'PUT',
+                headers: {
+                    "Content-Type": "application/json",
+                    "X-CSRFToken": getCSRFToken() 
+                },
+                body: JSON.stringify({ content: newContent })
+            })
+            .then(response => {
+                if (!response.ok) throw new Error("Failed to update post.");
+                return response.json();
+            })
+            .then(data => {
+                document.getElementById(`content-${postId}`).textContent = newContent;
+
+                document.getElementById(`content-${postId}`).classList.remove('d-none');
+                document.getElementById(`textarea-${postId}`).classList.add('d-none');
+                document.getElementById(`save-btn-${postId}`).classList.add('d-none');
+                document.getElementById(`edit-btn-${postId}`).classList.remove('d-none');
+            })
+            .catch(error => {
+                alert(error.message);
+            });
+        }
+
+
+        function getCSRFToken() {
+            return document.cookie.split('; ')
+                .find(row => row.startsWith('csrftoken'))
+                .split('=')[1];
         }
     </script>
 
