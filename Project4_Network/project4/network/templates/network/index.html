@@ -36,8 +36,17 @@
                 <small class="text-muted">{{ post.timestamp }}</small>
             </p>
             <p class="card-text">
-               ❤️ 0 likes 
+               ❤️ <span id="like-count-{{ post.id }}">{{ post.likes.count }}</span> likes
             </p>
+
+            {% if user.is_authenticated %}
+                <button id="like-btn-{{ post.id }}" 
+                    class="btn btn-sm {% if user in post.likes.all %}btn-danger{% else %}btn-outline-danger{% endif %}"
+                    onclick="toggleLike({{ post.id }})">
+                    {% if user in post.likes.all %}Unlike{% else %}Like{% endif %}
+                </button>
+            {% endif %}
+
 
             {% if user == post.author %}
                 <button class="btn btn-sm btn-outline-primary" onclick="editPost({{ post.id }})" id="edit-btn-{{ post.id }}">Edit</button>
@@ -78,48 +87,79 @@
 
     <script>
 
-        function editPost(postId) {
-            document.getElementById(`content-${postId}`).classList.add('d-none');
-            document.getElementById(`textarea-${postId}`).classList.remove('d-none');
-            document.getElementById(`save-btn-${postId}`).classList.remove('d-none');
-            document.getElementById(`edit-btn-${postId}`).classList.add('d-none');
-        }
+    function editPost(postId) {
+        document.getElementById(`content-${postId}`).classList.add('d-none');
+        document.getElementById(`textarea-${postId}`).classList.remove('d-none');
+        document.getElementById(`save-btn-${postId}`).classList.remove('d-none');
+        document.getElementById(`edit-btn-${postId}`).classList.add('d-none');
+    }
 
-        function savePost(postId) {
-            const textarea = document.getElementById(`textarea-${postId}`);
-            const newContent = textarea.value.trim();
+    function savePost(postId) {
+        const textarea = document.getElementById(`textarea-${postId}`);
+        const newContent = textarea.value.trim();
 
-            fetch(`/edit/${postId}`, {
-                method: 'PUT',
-                headers: {
-                    "Content-Type": "application/json",
-                    "X-CSRFToken": getCSRFToken() 
-                },
-                body: JSON.stringify({ content: newContent })
-            })
-            .then(response => {
-                if (!response.ok) throw new Error("Failed to update post.");
-                return response.json();
-            })
-            .then(data => {
-                document.getElementById(`content-${postId}`).textContent = newContent;
+        fetch(`/edit/${postId}`, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken() 
+            },
+            body: JSON.stringify({ content: newContent })
+        })
+        .then(response => {
+            if (!response.ok) throw new Error("Failed to update post.");
+            return response.json();
+        })
+        .then(data => {
+            document.getElementById(`content-${postId}`).textContent = newContent;
 
-                document.getElementById(`content-${postId}`).classList.remove('d-none');
-                document.getElementById(`textarea-${postId}`).classList.add('d-none');
-                document.getElementById(`save-btn-${postId}`).classList.add('d-none');
-                document.getElementById(`edit-btn-${postId}`).classList.remove('d-none');
-            })
-            .catch(error => {
-                alert(error.message);
-            });
-        }
+            document.getElementById(`content-${postId}`).classList.remove('d-none');
+            document.getElementById(`textarea-${postId}`).classList.add('d-none');
+            document.getElementById(`save-btn-${postId}`).classList.add('d-none');
+            document.getElementById(`edit-btn-${postId}`).classList.remove('d-none');
+        })
+        .catch(error => {
+            alert(error.message);
+        });
+    }
 
 
-        function getCSRFToken() {
-            return document.cookie.split('; ')
-                .find(row => row.startsWith('csrftoken'))
-                .split('=')[1];
-        }
+    function getCSRFToken() {
+        return document.cookie.split('; ')
+            .find(row => row.startsWith('csrftoken'))
+            .split('=')[1];
+    }
+
+    
+    function toggleLike(postId) {
+        fetch(`/like/${postId}`, {
+            method: 'PUT',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken()
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.likes !== undefined) {
+                document.getElementById(`like-count-${postId}`).textContent = data.likes;
+
+                const likeBtn = document.getElementById(`like-btn-${postId}`);
+
+                if (data.liked) {
+                    likeBtn.textContent = "Unlike";
+                    likeBtn.classList.remove("btn-outline-danger");
+                    likeBtn.classList.add("btn-danger");
+                }
+                else {
+                    likeBtn.textContent = "Like";
+                    likeBtn.classList.remove("btn-danger");
+                    likeBtn.classList.add("btn-outline-danger");
+                }
+            }
+        })
+        .catch(error => alert("Error updating like status."));
+    }
     </script>
 
 {% endblock %}
