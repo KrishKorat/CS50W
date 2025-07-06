@@ -60,7 +60,7 @@ def profile(request, username):
         if is_following:
             Follow.objects.filter(follower=request.user, following=profile_user).delete()
         else:
-            Follow.objects.create(followe=request.user, following=profile_user)
+            Follow.objects.create(follower=request.user, following=profile_user)
         return redirect("profile", username=username)
 
 
