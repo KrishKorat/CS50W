@@ -9,6 +9,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import get_object_or_404, redirect
 from django.core.paginator import Paginator
 from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_http_methods
 import json
 
 
@@ -114,6 +115,31 @@ def edit_post(request, post_id):
         return JsonResponse({"message": "Post updated successfully."})
     else:
         return JsonResponse({"error": "Empty content not allowed"}, status=400)
+
+
+@login_required
+@require_http_methods(["PUT"])
+def toggle_like(request, post_id):
+    
+    try:
+        post = Post.objects.get(pk=post_id)
+    except Post.DoesNotExist:
+        return JsonResponse({"error": "Post does not exist."}, status=404)
+    
+    user = request.user
+
+    if user in post.likes.all():
+        post.likes.remove(user)
+        liked = False
+    else: 
+        post.likes.add(user)
+        liked = True
+    
+    return JsonResponse({
+        "message": "Liked status updated.",
+        "likes": post.likes.count(),
+        "liked": liked
+    })
 
 
 
