@@ -1,35 +1,36 @@
-from .models import RaceResult, FantasyTeam
+from .models import RaceResult
 
-POINTS_TABLE = {
-    1: 25,
-    2: 18,
-    3: 15,
-    4: 12,
-    5: 10,
-    6: 8,
-    7: 6,
-    8: 4,
-    9: 2,
-    10: 1
-}
+def calculate_team_points(team):
+    points = 0
+    race = team.race
 
-def calculate_fantasy_points(race):
-    results = RaceResult.objects.filter(race=race)
-    fastest_lap_driver_ids = results.filter(fastest_lap=True).values_list('driver_id', flat=True)
+    # Points logic — mock or actual F1 style
+    scoring = {
+        1: 25,
+        2: 18,
+        3: 15,
+        4: 12,
+        5: 10,
+        6: 8,
+        7: 6,
+        8: 4,
+        9: 2,
+        10: 1
+    }
 
-    teams = FantasyTeam.objects.filter(race=race)
+    for driver in [team.driver_1, team.driver_2]:
+        try:
+            result = RaceResult.objects.get(driver=driver, race=race)
+            points += scoring.get(result.position, 0)
+            if result.fastest_lap:
+                points += 1
+        except RaceResult.DoesNotExist:
+            continue
 
-    for team in teams:
-        score = 0
-        for driver in [team.driver_1, team.driver_2]:
-            try:
-                result = results.get(driver=driver)
-                position_points = POINTS_TABLE.get(result.position, 0)
-                score += position_points
-                if result.driver.id in fastest_lap_driver_ids:
-                    score += 1
-            except RaceResult.DoesNotExist:
-                pass
+    # Simple constructor bonus
+    if team.constructor.name.lower() in [team.driver_1.team.lower(), team.driver_2.team.lower()]:
+        points += 10  # or adjust logic
 
-        team.points = score
-        team.save()
+    team.points = points
+    team.save()
+    return points

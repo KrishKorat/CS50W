@@ -1,7 +1,7 @@
 {% extends "fantasy/layout.html" %}
 {% block content %}
 
-<form method="get" action="{% url 'view_team' %}">
+<form method="get" action="{% url 'view_team'  race_id=race.id %} %}">
     <label for="race">Select Race:</label>
     <select name="race_id" onchange="this.form.submit()" class="form-select w-auto d-inline-block">
         {% for r in races %}

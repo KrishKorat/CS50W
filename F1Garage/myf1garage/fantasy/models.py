@@ -45,3 +45,6 @@ class RaceResult(models.Model):
     driver = models.ForeignKey(Driver, on_delete=models.CASCADE)
     position = models.IntegerField()
     fastest_lap = models.BooleanField(default=False)
+
+    def __str__(self):
+      return f"{self.driver.name} - {self.race.name} - P{self.position}"

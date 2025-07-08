@@ -7,7 +7,6 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Driver, Constructor, FantasyTeam, Race
 from django.http import Http404
-from .utils import calculate_fantasy_points
 from django.db.models import Sum
 
 # Create your views here.
@@ -18,8 +17,8 @@ def index(request):
 
 @login_required
 def create_fantasy_team(request):
-    drivers = Driver.objects.all()
-    constructors = Constructor.objects.all()
+    drivers = Driver.objects.all().order_by('-cost')
+    constructors = Constructor.objects.all().order_by('-cost')
     races = Race.objects.all()
     MAX_BUDGET = 100
 
@@ -71,24 +70,29 @@ def create_fantasy_team(request):
 
 
 @login_required
-def view_fantasy_team(request, race_id=None):
-    races = Race.objects.all()
-
-    # If no race is selected yet, default to the first in the list
-    if race_id is None:
-        race = races.first()
-    else:
-        race = Race.objects.get(id=race_id)
-
+def view_fantasy_team(request, race_id):
     try:
+        race = Race.objects.get(id=race_id)
         team = FantasyTeam.objects.get(user=request.user, race=race)
-    except FantasyTeam.DoesNotExist:
+    except (Race.DoesNotExist, FantasyTeam.DoesNotExist):
         team = None
+        race = None
 
     return render(request, "fantasy/view_team.html", {
         "team": team,
-        "race": race,
-        "races": races,
+        "race": race
+    })
+
+@login_required
+def leaderboard(request):
+    leaderboard_data = (
+        FantasyTeam.objects.values("user__username")
+        .annotate(total_points=Sum("points"))
+        .order_by("-total_points")
+    )
+
+    return render(request, "fantasy/leaderboard.html", {
+        "leaderboard": leaderboard_data
     })
 
 

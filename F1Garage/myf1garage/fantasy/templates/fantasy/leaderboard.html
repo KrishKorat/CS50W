@@ -1,0 +1,42 @@
+{% extends "fantasy/layout.html" %}
+
+{% block body %}
+<div class="container mt-5">
+    <h2 class="text-center mb-4">🏁 Fantasy Leaderboard</h2>
+
+    {% if leaderboard %}
+        <div class="table-responsive">
+            <table class="table table-striped table-hover shadow-sm">
+                <thead class="table-dark">
+                    <tr>
+                        <th scope="col">Rank</th>
+                        <th scope="col">User</th>
+                        <th scope="col">Race</th>
+                        <th scope="col">Driver 1</th>
+                        <th scope="col">Driver 2</th>
+                        <th scope="col">Constructor</th>
+                        <th scope="col">Total Points</th>
+                        <th scope="col">Budget Spent</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for team in leaderboard %}
+                        <tr>
+                            <td>{{ forloop.counter }}</td>
+                            <td>{{ team.user.username }}</td>
+                            <td>{{ team.race.name }}</td>
+                            <td>{{ team.driver_1.name }}</td>
+                            <td>{{ team.driver_2.name }}</td>
+                            <td>{{ team.constructor.name }}</td>
+                            <td><strong>{{ team.total_points }}</strong></td>
+                            <td>${{ team.total_cost }}M</td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <p class="text-center text-muted">No fantasy teams have been submitted yet.</p>
+    {% endif %}
+</div>
+{% endblock %}
