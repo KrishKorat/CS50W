@@ -1,0 +1,25 @@
+{% extends "fantasy/layout.html" %}
+{% block content %}
+<div class="container mt-5">
+    <h2>My Fantasy Team</h2>
+
+    {% if team %}
+        <div class="card mt-4 shadow-sm">
+            <div class="card-body">
+                <h5 class="card-title">Race: {{ race.name }} ({{ race.date }})</h5>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item"><strong>Driver 1:</strong> {{ team.driver_1.name }} ({{ team.driver_1.team }})</li>
+                    <li class="list-group-item"><strong>Driver 2:</strong> {{ team.driver_2.name }} ({{ team.driver_2.team }})</li>
+                    <li class="list-group-item"><strong>Constructor:</strong> {{ team.constructor.name }}</li>
+                    <li class="list-group-item"><strong>Total Cost:</strong> ${{ team.total_cost }}M</li>
+                    <li class="list-group-item"><strong>Points:</strong> {{ team.points }}</li>
+                </ul>
+                <a href="{% url 'create_team' %}" class="btn btn-outline-danger mt-3">Edit Team</a>
+            </div>
+        </div>
+    {% else %}
+        <p class="mt-4">You haven’t created a fantasy team yet.</p>
+        <a href="{% url 'create_team' %}" class="btn btn-red">Create Your Team</a>
+    {% endif %}
+</div>
+{% endblock %}
