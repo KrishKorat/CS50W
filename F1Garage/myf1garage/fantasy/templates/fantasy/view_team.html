@@ -1,12 +1,23 @@
 {% extends "fantasy/layout.html" %}
 {% block content %}
+
+<form method="get" action="{% url 'view_team' %}">
+    <label for="race">Select Race:</label>
+    <select name="race_id" onchange="this.form.submit()" class="form-select w-auto d-inline-block">
+        {% for r in races %}
+            <option value="{{ r.id }}" {% if r.id == race.id %}selected{% endif %}>{{ r.name }}</option>
+        {% endfor %}
+    </select>
+</form>
+
+
 <div class="container mt-5">
     <h2>My Fantasy Team</h2>
 
     {% if team %}
         <div class="card mt-4 shadow-sm">
             <div class="card-body">
-                <h5 class="card-title">Race: {{ race.name }} ({{ race.date }})</h5>
+                <h5 class="card-title">Race: {{ race.name }}</h5>
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item"><strong>Driver 1:</strong> {{ team.driver_1.name }} ({{ team.driver_1.team }})</li>
                     <li class="list-group-item"><strong>Driver 2:</strong> {{ team.driver_2.name }} ({{ team.driver_2.team }})</li>

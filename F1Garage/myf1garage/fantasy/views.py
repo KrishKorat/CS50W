@@ -7,7 +7,8 @@ from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Driver, Constructor, FantasyTeam, Race
 from django.http import Http404
-
+from .utils import calculate_fantasy_points
+from django.db.models import Sum
 
 # Create your views here.
 
@@ -19,13 +20,14 @@ def index(request):
 def create_fantasy_team(request):
     drivers = Driver.objects.all()
     constructors = Constructor.objects.all()
-    race = Race.objects.first()  # later allow user to pick race
-    MAX_BUDGET = 50
+    races = Race.objects.all()
+    MAX_BUDGET = 100
 
     if request.method == "POST":
         d1_id = request.POST.get("driver_1")
         d2_id = request.POST.get("driver_2")
         constructor_id = request.POST.get("constructor")
+        race_id = request.POST.get("race")
 
         if d1_id == d2_id:
             messages.error(request, "Please select two different drivers.")
@@ -33,15 +35,16 @@ def create_fantasy_team(request):
             d1 = Driver.objects.get(id=d1_id)
             d2 = Driver.objects.get(id=d2_id)
             constructor = Constructor.objects.get(id=constructor_id)
+            race = Race.objects.get(id=race_id)
 
             total_cost = d1.cost + d2.cost + constructor.cost
 
             if total_cost > MAX_BUDGET:
                 messages.error(request, f"Budget exceeded! Total: ${total_cost}M (Max: ${MAX_BUDGET}M)")
             else:
-                # Check if team already exists for this user and race
                 team, created = FantasyTeam.objects.get_or_create(
-                    user=request.user, race=race,
+                    user=request.user,
+                    race=race,
                     defaults={
                         "driver_1": d1,
                         "driver_2": d2,
@@ -56,19 +59,27 @@ def create_fantasy_team(request):
                     team.total_cost = total_cost
                     team.save()
 
-                messages.success(request, "Fantasy team saved successfully!")
-                return redirect("view_team")
+                messages.success(request, f"Fantasy team saved for {race.name}!")
+                return redirect("view_team", race_id=race.id)
 
     return render(request, "fantasy/create_team.html", {
         "drivers": drivers,
         "constructors": constructors,
+        "races": races,
         "budget": MAX_BUDGET,
     })
 
 
 @login_required
-def view_fantasy_team(request):
-    race = Race.objects.first()  # Replace with selected race later
+def view_fantasy_team(request, race_id=None):
+    races = Race.objects.all()
+
+    # If no race is selected yet, default to the first in the list
+    if race_id is None:
+        race = races.first()
+    else:
+        race = Race.objects.get(id=race_id)
+
     try:
         team = FantasyTeam.objects.get(user=request.user, race=race)
     except FantasyTeam.DoesNotExist:
@@ -76,8 +87,38 @@ def view_fantasy_team(request):
 
     return render(request, "fantasy/view_team.html", {
         "team": team,
-        "race": race
+        "race": race,
+        "races": races,
     })
+
+
+
+@login_required
+def assign_points(request):
+    if not request.user.is_superuser:
+        return redirect("index")  # deny access to non-admins
+
+    race = Race.objects.first()  # later support selecting race
+    calculate_fantasy_points(race)
+    messages.success(request, f"Points calculated and updated for {race.name}!")
+    return redirect("admin:index")
+
+
+@login_required
+def leaderboard(request):
+    leaderboard_data = (
+        FantasyTeam.objects
+        .values('user__username')
+        .annotate(total_points=Sum('points'))
+        .order_by('-total_points')
+    )
+
+    return render(request, "fantasy/leaderboard.html", {
+        "leaderboard": leaderboard_data
+    })
+
+
+
 
 
 

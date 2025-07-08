@@ -12,6 +12,22 @@
             font-family: 'Barlow Condensed', sans-serif;
         }
 
+        .logo-text {
+            font-family: 'Arial Black', sans-serif;
+            color: #ff1e00;
+            letter-spacing: 1px;
+            font-size: 1.2rem;
+        }
+
+        .navbar-dark .nav-link:hover {
+            color: #ff1e00 !important;
+        }
+
+        .navbar-dark .nav-link {
+            font-weight: 500;
+        }
+
+
         .f1-navbar {
             background-color: #0e0e18;
             font-family: 'Barlow Condensed', sans-serif;
@@ -126,34 +142,48 @@
 </head>
 <body>
 
-    <nav class="navbar navbar-expand-lg f1-navbar px-4">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark px-4">
         <a class="navbar-brand d-flex align-items-center" href="{% url 'index' %}">
             <img src="{% static 'fantasy/images/f1logo.png' %}" alt="F1 Logo" height="26" class="me-2">
-            <span class="logo-text">MyF1Garage</span>
+            <span class="logo-text text-white fw-bold">MyF1Garage</span>
         </a>
-        
+
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarF1">
             <span class="navbar-toggler-icon"></span>
         </button>
 
         <div class="collapse navbar-collapse" id="navbarF1">
             <ul class="navbar-nav ms-auto mb-2 mb-lg-0">
-                <li class="nav-item"><a class="nav-link" href="#">Latest</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Schedule</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Results</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Drivers</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Teams</a></li>
-                <li class="nav-item"><a class="nav-link" href="#">Fantasy</a></li>
-
+                <li class="nav-item">
+                    <a class="nav-link text-white" href="{% url 'index' %}">Home</a>
+                </li>
                 {% if user.is_authenticated %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'logout' %}">Logout</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'create_team' %}">Create Team</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'view_team' %}">My Team</a>
+                    </li>
+                    {% if user.is_superuser %}
+                    <li class="nav-item">
+                        <a class="nav-link text-warning" href="/admin/">Admin</a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="{% url 'logout' %}">Logout</a>
+                    </li>
                 {% else %}
-                    <li class="nav-item"><a class="nav-link" href="{% url 'login' %}">Login</a></li>
-                    <li class="nav-item"><a class="nav-link" href="{% url 'register' %}">Register</a></li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'login' %}">Login</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'register' %}">Register</a>
+                    </li>
                 {% endif %}
             </ul>
         </div>
     </nav>
+
 
 
     <div class="container mt-4">
