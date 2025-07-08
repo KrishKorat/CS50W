@@ -1,0 +1,27 @@
+{% extends 'fantasy/layout.html' %}
+
+{% block content %}
+<div class="form-container">
+    <h2>Create Account</h2>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mb-3">
+            <label class="form-label">Username</label>
+            <input class="form-control rounded" type="text" name="username" placeholder="Enter username" autocomplete="off" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Email</label>
+            <input class="form-control" type="email" name="email" placeholder="Enter email" autocomplete="off" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Password</label>
+            <input class="form-control" type="password" name="password" placeholder="Enter password" autocomplete="off" required>
+        </div>
+        <div class="mb-3">
+            <label class="form-label">Confirm Password</label>
+            <input class="form-control" type="password" name="confirmation" autocomplete="off" placeholder="Confirm password" required>
+        </div>
+        <button class="btn btn-red w-100 mt-3" type="submit">Register</button>
+    </form>
+</div>
+{% endblock %}
