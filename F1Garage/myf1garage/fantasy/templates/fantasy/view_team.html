@@ -1,14 +1,14 @@
 {% extends "fantasy/layout.html" %}
 {% block content %}
 
-<form method="get" action="{% url 'view_team'  race_id=race.id %} %}">
-    <label for="race">Select Race:</label>
-    <select name="race_id" onchange="this.form.submit()" class="form-select w-auto d-inline-block">
+<form method="get" onchange="location.href='/team/' + this.race.value + '/'">
+    <select name="race" class="form-select w-auto d-inline-block">
         {% for r in races %}
-            <option value="{{ r.id }}" {% if r.id == race.id %}selected{% endif %}>{{ r.name }}</option>
+            <option value="{{ r.id }}" {% if r.id == selected_race.id %}selected{% endif %}>{{ r.name }}</option>
         {% endfor %}
     </select>
 </form>
+
 
 
 <div class="container mt-5">

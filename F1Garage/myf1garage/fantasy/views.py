@@ -1,13 +1,15 @@
 from django.shortcuts import render
 from django.http import HttpResponse
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from .models import Driver, Constructor, FantasyTeam, Race
 from django.http import Http404
-from django.db.models import Sum
+
+from django.db.models import F, Sum, Value
+from django.db.models.functions import Coalesce
 
 # Create your views here.
 
@@ -69,31 +71,77 @@ def create_fantasy_team(request):
     })
 
 
+
+
 @login_required
 def view_fantasy_team(request, race_id):
-    try:
-        race = Race.objects.get(id=race_id)
-        team = FantasyTeam.objects.get(user=request.user, race=race)
-    except (Race.DoesNotExist, FantasyTeam.DoesNotExist):
-        team = None
-        race = None
+    races = Race.objects.all()
+    race = get_object_or_404(Race, id=race_id)
+
+    team = FantasyTeam.objects.filter(user=request.user, race=race).first()
 
     return render(request, "fantasy/view_team.html", {
+        "selected_race": race,
+        "races": races,
         "team": team,
-        "race": race
     })
+
+
+
+
+@login_required
+def view_fantasy_team_redirect(request):
+    # Redirect to first available race the user has a team for
+    team = FantasyTeam.objects.filter(user=request.user).order_by('-race__date').first()
+    if team:
+        return redirect("view_team", race_id=team.race.id)
+    else:
+        messages.info(request, "Please create a fantasy team first.")
+        return redirect("create_team")
+
+
+
+
+
+
+
+
 
 @login_required
 def leaderboard(request):
+    print("🏁 Rendering leaderboard")
+
     leaderboard_data = (
-        FantasyTeam.objects.values("user__username")
-        .annotate(total_points=Sum("points"))
+        FantasyTeam.objects
+        .values(
+            "user__username",
+            "driver_1__name",
+            "driver_2__name",
+            "constructor__name",
+            "race__name",
+            "total_cost"
+        )
+        .annotate(
+            total_points=Sum(
+                F("driver_1__points") + F("driver_2__points") + F("constructor__points")
+            )
+        )
         .order_by("-total_points")
     )
 
     return render(request, "fantasy/leaderboard.html", {
         "leaderboard": leaderboard_data
     })
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -108,18 +156,27 @@ def assign_points(request):
     return redirect("admin:index")
 
 
-@login_required
-def leaderboard(request):
-    leaderboard_data = (
-        FantasyTeam.objects
-        .values('user__username')
-        .annotate(total_points=Sum('points'))
-        .order_by('-total_points')
-    )
+def calculate_fantasy_points(race):
+    """
+    Dummy implementation: Assigns random or zero points to all fantasy teams for the given race.
+    Replace this logic with your actual points calculation.
+    """
+    if not race:
+        return
+    teams = FantasyTeam.objects.filter(race=race)
+    for team in teams:
+        # Example: set points to 0 (replace with real calculation)
+        team.points = 0
+        team.save()
 
-    return render(request, "fantasy/leaderboard.html", {
-        "leaderboard": leaderboard_data
-    })
+
+
+
+
+
+
+
+
 
 
 

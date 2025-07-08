@@ -1,6 +1,6 @@
 {% extends "fantasy/layout.html" %}
 
-{% block body %}
+{% block content %}
 <div class="container mt-5">
     <h2 class="text-center mb-4">🏁 Fantasy Leaderboard</h2>
 
@@ -23,11 +23,11 @@
                     {% for team in leaderboard %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ team.user.username }}</td>
-                            <td>{{ team.race.name }}</td>
-                            <td>{{ team.driver_1.name }}</td>
-                            <td>{{ team.driver_2.name }}</td>
-                            <td>{{ team.constructor.name }}</td>
+                            <td>{{ team.user__username }}</td>
+                            <td>{{ team.race__name }}</td>
+                            <td>{{ team.driver_1__name }}</td>
+                            <td>{{ team.driver_2__name }}</td>
+                            <td>{{ team.constructor__name }}</td>
                             <td><strong>{{ team.total_points }}</strong></td>
                             <td>${{ team.total_cost }}M</td>
                         </tr>
