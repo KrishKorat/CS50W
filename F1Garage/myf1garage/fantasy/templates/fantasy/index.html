@@ -1,15 +1,70 @@
-{% extends 'fantasy/layout.html' %}
-
+{% extends "fantasy/layout.html" %}
+{% load static %}
 {% block content %}
-    <div class="text-center">
-        <h1 class="section-title">Welcome to MyF1Garage 🏁</h1>
-        <p class="lead">Build your dream F1 team. Stay under budget. Race for points!</p>
 
-        {% if user.is_authenticated %}
-            <a href="#" class="btn btn-red mt-3">Create Your Garage</a>
-        {% else %}
-            <a href="{% url 'register' %}" class="btn btn-red mt-3 me-2">Register Now</a>
-            <a href="{% url 'login' %}" class="btn btn-outline-dark mt-3">Login</a>
-        {% endif %}
+<div class="text-center mt-5 mb-5">
+    <h1 class="fw-bold display-4" style="color: #e10600;">🏎 Welcome to MyF1Garage</h1>
+    <p class="lead text-muted">Create your fantasy F1 team. Compete. Climb the leaderboard. 🏁</p>
+
+    {% if user.is_authenticated %}
+        <a href="{% url 'create_team' %}" class="btn btn-red btn-lg px-4 me-3">Create / Edit Team</a>
+        <a href="{% url 'leaderboard' %}" class="btn btn-outline-dark btn-lg px-4">Leaderboard</a>
+    {% else %}
+        <a href="{% url 'register' %}" class="btn btn-danger btn-lg px-4 me-3">Register</a>
+        <a href="{% url 'login' %}" class="btn btn-outline-secondary btn-lg px-4">Login</a>
+    {% endif %}
+</div>
+
+<div class="row text-center mb-4">
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="section-title">Constructors</h5>
+                <ul class="list-unstyled">
+                    {% for constructor in constructors %}
+                        <li class="fs-5 fw-semibold text-danger-emphasis mb-1">
+                            🏎 {{ constructor.name }}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
     </div>
+    <div class="col-md-6 mb-3">
+        <div class="card shadow-sm border-0">
+            <div class="card-body">
+                <h5 class="section-title">All Races</h5>
+                <ul class="list-unstyled">
+                    {% for race in races %}
+                        <li class="fs-5 fw-semibold text-primary-emphasis mb-1">
+                            🏁 {{ race.name }}
+                        </li>
+                    {% endfor %}
+                </ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="mt-5 mb-4 text-center">
+    <h3 class="section-title">🏆 Top Scorers This Season</h3>
+</div>
+
+<div class="row justify-content-center">
+    {% for score in leaderboard %}
+        <div class="col-md-3 mb-3">
+            <div class="card border-0 shadow text-center">
+                <div class="card-body">
+                    <h5 class="fw-bold">{{ score.user.username }}</h5>
+                    <p class="mb-0 text-muted">{{ score.total_points }} pts</p>
+                </div>
+            </div>
+        </div>
+    {% empty %}
+        <p class="text-center text-muted">No scores yet — be the first to climb the leaderboard!</p>
+    {% endfor %}
+</div>
+
 {% endblock %}

@@ -10,11 +10,30 @@ from django.http import Http404
 
 from django.db.models import F, Sum, Value
 from django.db.models.functions import Coalesce
+from datetime import date
 
 # Create your views here.
 
 def index(request):
-    return render(request, "fantasy/index.html")
+    constructors = Constructor.objects.all()
+    races = Race.objects.all()
+    
+    upcoming_race = Race.objects.filter(date__gte=date.today()).order_by('date').first()
+
+    leaderboard = (
+        SeasonScore.objects
+        .filter(season_year=2025)
+        .select_related('user')
+        .order_by('-total_points')[:5]
+    )
+
+    return render(request, "fantasy/index.html", {
+        "constructors": constructors,
+        "races": races,
+        "upcoming_race": upcoming_race,
+        "leaderboard": leaderboard,
+    })
+
 
 
 @login_required
