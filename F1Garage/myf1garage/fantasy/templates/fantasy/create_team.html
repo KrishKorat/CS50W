@@ -39,7 +39,7 @@
         </div>
 
         <div class="mb-3">
-            <strong>Remaining Budget: $<span id="remaining-budget">{{ budget }}</span>M</strong>
+            <strong>Remaining Budget: $<span id="remaining-budget">{{ remaining_budget }}</span>M</strong>
         </div>
 
         <button type="submit" class="btn btn-red">Save Team</button>
@@ -47,7 +47,7 @@
 </div>
 
 <script>
-    const budgetLimit = {{ budget }};
+    const budgetLimit = parseFloat("{{ budget }}");
     const driverSelects = document.querySelectorAll('.driver-select');
     const constructorSelect = document.querySelector('.constructor-select');
     const budgetDisplay = document.getElementById('remaining-budget');

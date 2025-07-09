@@ -19,12 +19,15 @@ def index(request):
 
 @login_required
 def create_fantasy_team(request):
-    existing_team = FantasyTeam.objects.filter(user=request.user).first()
+    user = request.user
 
+    # Check if team already exists
+    existing_team = FantasyTeam.objects.filter(user=user).first()
     if existing_team:
-        # Optional: Redirect to view/edit the existing team
-        messages.info(request, "You already created a fantasy team.")
-        return redirect("view_team")
+        return redirect("view_team_redirect")
+
+    drivers = Driver.objects.all().order_by('-cost')
+    constructors = Constructor.objects.all().order_by('-cost')
 
     if request.method == "POST":
         driver_1_id = request.POST.get("driver_1")
@@ -35,27 +38,33 @@ def create_fantasy_team(request):
         driver_2 = get_object_or_404(Driver, id=driver_2_id)
         constructor = get_object_or_404(Constructor, id=constructor_id)
 
-        if driver_1 == driver_2:
-            messages.error(request, "You must choose two different drivers.")
-            return redirect("create_team")
+        total_cost = driver_1.cost + driver_2.cost + constructor.cost
 
-        team = FantasyTeam.objects.create(
-            user=request.user,
+        if total_cost > 100:
+            return render(request, "fantasy/create_team.html", {
+                "drivers": drivers,
+                "constructors": constructors,
+                "error": "Budget exceeded! Choose cheaper team members.",
+                "remaining_budget": 100 - total_cost
+            })
+
+        # Save the team
+        FantasyTeam.objects.create(
+            user=user,
             driver_1=driver_1,
             driver_2=driver_2,
             constructor=constructor,
-            total_cost=driver_1.cost + driver_2.cost + constructor.cost
+            total_cost=total_cost
         )
 
-        messages.success(request, "Fantasy team created successfully!")
-        return redirect("view_team")
+        return redirect("view_team_redirect")
 
-    drivers = Driver.objects.all()
-    constructors = Constructor.objects.all()
-
+    # On GET: show max budget (default)
     return render(request, "fantasy/create_team.html", {
         "drivers": drivers,
-        "constructors": constructors
+        "constructors": constructors,
+        "remaining_budget": 100,  # Default full budget on form load
+        "budget": 100
     })
 
 
@@ -77,12 +86,14 @@ def view_fantasy_team(request, team_id):
 
 @login_required
 def view_fantasy_team_redirect(request):
-    team = FantasyTeam.objects.filter(user=request.user).first()
-
-    if not team:
+    try:
+        team = FantasyTeam.objects.get(user=request.user)
+    except FantasyTeam.DoesNotExist:
         return redirect("create_team")
 
-    return redirect("view_team", team_id=team.id)
+    return render(request, "fantasy/view_team.html", {
+        "team": team
+    })
 
 
 
