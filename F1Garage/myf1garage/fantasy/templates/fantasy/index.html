@@ -2,6 +2,68 @@
 {% load static %}
 {% block content %}
 
+<style>
+  .podium {
+    display: flex;
+    justify-content: center;
+    align-items: flex-end;
+    gap: 20px;
+    margin-top: 3rem;
+  }
+
+  .podium-place {
+    width: 100px;
+    text-align: center;
+    color: black;
+    border-radius: 10px 10px 0 0;
+    padding-top: 10px;
+    position: relative;
+  }
+
+  .position-label {
+    position: absolute;
+    top: -30px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 1.5rem;
+  }
+
+  .first { background: gold; height: 180px; order: 2; }
+  .second { background: silver; height: 140px; order: 1; }
+  .third { background: #cd7f32; height: 110px; order: 3; }
+
+  .podium-username {
+    font-weight: bold;
+    font-size: 1rem;
+    margin-top: auto;
+  }
+
+  .podium-points {
+    font-size: 0.9rem;
+    color: black;
+  }
+
+  @media (max-width: 576px) {
+    .podium {
+      flex-direction: column-reverse;
+      align-items: center;
+    }
+
+    .podium-place {
+      width: 70%;
+      height: auto !important;
+      padding: 1rem;
+    }
+
+    .first, .second, .third {
+      height: auto;
+    }
+  }
+</style>
+
+
+
+
 <div class="text-center mt-5 mb-5">
     <h1 class="fw-bold display-4" style="color: #e10600;">🏎 Welcome to MyF1Garage</h1>
     <p class="lead text-muted">Create your fantasy F1 team. Compete. Climb the leaderboard. 🏁</p>
@@ -15,17 +77,28 @@
     {% endif %}
 </div>
 
-<div class="row text-center mb-4">
-    <div class="col-md-6 mb-3">
+<div class="row mb-4">
+    <div class="col-md-6 mb-3 text-center">
         <div class="card shadow-sm border-0">
             <div class="card-body">
                 <h5 class="section-title">Constructors</h5>
+                <hr>
                 <ul class="list-unstyled">
-                    {% for constructor in constructors %}
-                        <li class="fs-5 fw-semibold text-danger-emphasis mb-1">
-                            🏎 {{ constructor.name }}
-                        </li>
-                    {% endfor %}
+                    <li class="fs-5 fw-semibold mb-1" style="color: blue;">
+                        Red Bull Racing
+                    </li>
+                    <li class="fs-5 fw-semibold mb-1" style="color: orange;">
+                        McLaren F1 Team
+                    </li>
+                    <li class="fs-5 fw-semibold mb-1" style="color: red;">
+                        Scudaria Ferrari
+                    </li>
+                    <li class="fs-5 fw-semibold mb-1" style="color: #005AFF;">
+                        Williams Racing
+                    </li>
+                    <li class="fs-5 fw-semibold mb-1" style="color: #005CA9;">
+                        BWT Alpine F1 Team
+                    </li>
                 </ul>
 
             </div>
@@ -34,13 +107,24 @@
     <div class="col-md-6 mb-3">
         <div class="card shadow-sm border-0">
             <div class="card-body">
-                <h5 class="section-title">All Races</h5>
-                <ul class="list-unstyled">
-                    {% for race in races %}
+                <h5 class="section-title text-center">Races</h5>
+                <hr>
+                <ul class="list-unstyled" style="margin-left: 180px;">
                         <li class="fs-5 fw-semibold text-primary-emphasis mb-1">
-                            🏁 {{ race.name }}
+                            <img src="https://flagcdn.com/be.svg" width="20" height="16" alt="Belgium Flag" style="border: 0.1px solid black;"> Spa-Francorchamps GP
                         </li>
-                    {% endfor %}
+                        <li class="fs-5 fw-semibold text-primary-emphasis mb-1">
+                            <img src="https://flagcdn.com/jp.svg" width="20" height="16" alt="Japan Flag" style="border: 0.1px solid black;"> Suzuka GP
+                        </li>
+                        <li class="fs-5 fw-semibold text-primary-emphasis mb-1">
+                            <img src="https://flagcdn.com/it.svg" width="20" height="16" alt="Italy Flag" style="border: 0.1px solid black; object-fit: cover;"> Monza GP
+                        </li>
+                        <li class="fs-5 fw-semibold text-primary-emphasis mb-1">
+                            <img src="https://flagcdn.com/gb.svg" width="20" height="16" alt="Britain Flag" style="border: 0.1px solid black; object-fit: cover;"> Silverstone GP
+                        </li>
+                        <li class="fs-5 fw-semibold text-primary-emphasis mb-1">
+                            <img src="https://flagcdn.com/mc.svg" width="20" height="16" alt="Monaco Flag" style="border: 0.1px solid black;"> Monaco GP
+                        </li>
                 </ul>
 
             </div>
@@ -48,23 +132,42 @@
     </div>
 </div>
 
+
+
 <div class="mt-5 mb-4 text-center">
-    <h3 class="section-title">🏆 Top Scorers This Season</h3>
+  <h3 class="section-title display-6">🏁 Podium Finishers</h3>
 </div>
 
-<div class="row justify-content-center">
+{% if leaderboard %}
+  <div class="podium">
     {% for score in leaderboard %}
-        <div class="col-md-3 mb-3">
-            <div class="card border-0 shadow text-center">
-                <div class="card-body">
-                    <h5 class="fw-bold">{{ score.user.username }}</h5>
-                    <p class="mb-0 text-muted">{{ score.total_points }} pts</p>
-                </div>
-            </div>
+      {% if forloop.counter == 2 %}
+        <div class="podium-place second">
+          <div class="position-label">🥈</div>
+          <div class="podium-username">{{ score.user.username }}</div>
+          <div class="podium-points">{{ score.total_points }} pts</div>
         </div>
-    {% empty %}
-        <p class="text-center text-muted">No scores yet — be the first to climb the leaderboard!</p>
+      {% elif forloop.counter == 1 %}
+        <div class="podium-place first">
+          <div class="position-label">🥇</div>
+          <div class="podium-username">{{ score.user.username }}</div>
+          <div class="podium-points">{{ score.total_points }} pts</div>
+        </div>
+      {% elif forloop.counter == 3 %}
+        <div class="podium-place third">
+          <div class="position-label">🥉</div>
+          <div class="podium-username">{{ score.user.username }}</div>
+          <div class="podium-points">{{ score.total_points }} pts</div>
+        </div>
+      {% endif %}
     {% endfor %}
-</div>
+  </div>
+{% else %}
+  <div class="text-center text-muted mt-4">
+    <p>🏁 No podium scorers yet. Be the first to make history!</p>
+  </div>
+{% endif %}
+
+<div style="margin-top: 50px;"></div>
 
 {% endblock %}

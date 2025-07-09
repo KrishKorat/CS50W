@@ -12,6 +12,9 @@ from django.db.models import F, Sum, Value
 from django.db.models.functions import Coalesce
 from datetime import date
 
+from .utils import recalculate_all_points
+
+
 # Create your views here.
 
 def index(request):
@@ -40,13 +43,12 @@ def index(request):
 def create_fantasy_team(request):
     user = request.user
 
-    # Check if team already exists
     existing_team = FantasyTeam.objects.filter(user=user).first()
     if existing_team:
-        return redirect("view_team_redirect")
+        return redirect("view_team", team_id=existing_team.id)
 
-    drivers = Driver.objects.all().order_by('-cost')
-    constructors = Constructor.objects.all().order_by('-cost')
+    drivers = Driver.objects.all()
+    constructors = Constructor.objects.all()
 
     if request.method == "POST":
         driver_1_id = request.POST.get("driver_1")
@@ -76,14 +78,15 @@ def create_fantasy_team(request):
             total_cost=total_cost
         )
 
-        return redirect("view_team_redirect")
+        # ✅ Recalculate points for everyone
+        recalculate_all_points()
 
-    # On GET: show max budget (default)
+        return redirect("view_team", team_id=user.fantasyteam.id)
+
     return render(request, "fantasy/create_team.html", {
         "drivers": drivers,
         "constructors": constructors,
-        "remaining_budget": 100,  # Default full budget on form load
-        "budget": 100
+        "remaining_budget": 100
     })
 
 
@@ -117,12 +120,15 @@ def edit_fantasy_team(request):
                 "remaining_budget": 100 - total_cost
             })
 
-        # Update team
+        # ✅ Update team
         team.driver_1 = driver_1
         team.driver_2 = driver_2
         team.constructor = constructor
         team.total_cost = total_cost
         team.save()
+
+        # ✅ Recalculate points immediately
+        recalculate_all_points()
 
         return redirect("view_team_redirect")
 
@@ -132,7 +138,6 @@ def edit_fantasy_team(request):
         "team": team,
         "remaining_budget": 100 - team.total_cost
     })
-
 
 
 
@@ -193,48 +198,15 @@ def leaderboard(request):
 
 
 
+from .utils import recalculate_all_points
+
 @login_required
-@user_passes_test(lambda u: u.is_superuser)  # only allow admin
+@user_passes_test(lambda u: u.is_superuser)
 def assign_points(request):
-    # 1. Reset all driver and constructor points
-    Driver.objects.update(points=0)
-    Constructor.objects.update(points=0)
-
-    # 2. Assign driver points from RaceResult
-    for result in RaceResult.objects.all():
-        driver = result.driver
-        driver.points += result.points
-        driver.save()
-
-    # 3. Assign constructor points (sum of all its drivers' points)
-    constructors = Constructor.objects.all()
-    for constructor in constructors:
-        total_driver_points = Driver.objects.filter(constructor=constructor).aggregate(
-            total=Sum('points')
-        )['total'] or 0
-        constructor.points = total_driver_points
-        constructor.save()
-
-    # 4. Calculate FantasyTeam points (driver_1 + driver_2 + constructor)
-    teams = FantasyTeam.objects.select_related("driver_1", "driver_2", "constructor")
-    for team in teams:
-        team.points = (
-            team.driver_1.points +
-            team.driver_2.points +
-            team.constructor.points
-        )
-        team.save()
-
-    # 5. Update SeasonScore
-    for team in teams:
-        score_obj, _ = SeasonScore.objects.get_or_create(
-            user=team.user,
-            season_year=2025
-        )
-        score_obj.total_points = team.points
-        score_obj.save()
-
+    recalculate_all_points()
     return render(request, "fantasy/assign_points_success.html")
+
+
 
 
 

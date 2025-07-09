@@ -34,3 +34,47 @@ def calculate_team_points(team):
     team.points = points
     team.save()
     return points
+
+
+
+
+from .models import Driver, Constructor, RaceResult, FantasyTeam, SeasonScore
+from django.db.models import Sum
+
+def recalculate_all_points():
+    # 1. Reset all driver and constructor points
+    Driver.objects.update(points=0)
+    Constructor.objects.update(points=0)
+
+    # 2. Assign driver points from RaceResult
+    for result in RaceResult.objects.all():
+        driver = result.driver
+        driver.points += result.points
+        driver.save()
+
+    # 3. Assign constructor points (sum of all its drivers' points)
+    for constructor in Constructor.objects.all():
+        total_driver_points = Driver.objects.filter(constructor=constructor).aggregate(
+            total=Sum('points')
+        )['total'] or 0
+        constructor.points = total_driver_points
+        constructor.save()
+
+    # 4. Update FantasyTeam points
+    teams = FantasyTeam.objects.select_related("driver_1", "driver_2", "constructor")
+    for team in teams:
+        team.points = (
+            team.driver_1.points +
+            team.driver_2.points +
+            team.constructor.points
+        )
+        team.save()
+
+    # 5. Update SeasonScore
+    for team in teams:
+        score_obj, _ = SeasonScore.objects.get_or_create(
+            user=team.user,
+            season_year=2025
+        )
+        score_obj.total_points = team.points
+        score_obj.save()
