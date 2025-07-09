@@ -153,17 +153,12 @@ def view_fantasy_team_redirect(request):
 
 
 
-@login_required
 def leaderboard(request):
-    SEASON_YEAR = 2025  # You could even make this dynamic later
-
     leaderboard_data = (
         SeasonScore.objects
-        .filter(season_year=SEASON_YEAR)
-        .order_by('-total_points')
-        .values('user__username', 'total_points')
+        .select_related("user")
+        .order_by("-total_points")
     )
-
     return render(request, "fantasy/leaderboard.html", {
         "leaderboard": leaderboard_data
     })
@@ -180,42 +175,47 @@ def leaderboard(request):
 
 
 @login_required
-@user_passes_test(lambda u: u.is_superuser)  # Only admin can assign
+@user_passes_test(lambda u: u.is_superuser)  # only allow admin
 def assign_points(request):
-    SEASON_YEAR = 2025
+    # 1. Reset all driver and constructor points
+    Driver.objects.update(points=0)
+    Constructor.objects.update(points=0)
 
-    # Step 1: Update FantasyTeam.points per race
-    for team in FantasyTeam.objects.all():
-        try:
-            driver1_result = RaceResult.objects.get(driver=team.driver_1, race__year=SEASON_YEAR)
-            driver2_result = RaceResult.objects.get(driver=team.driver_2, race__year=SEASON_YEAR)
-        except RaceResult.DoesNotExist:
-            continue  # Skip if any result is missing
+    # 2. Assign driver points from RaceResult
+    for result in RaceResult.objects.all():
+        driver = result.driver
+        driver.points += result.points
+        driver.save()
 
-        constructor_points = team.constructor.points or 0
+    # 3. Assign constructor points (sum of all its drivers' points)
+    constructors = Constructor.objects.all()
+    for constructor in constructors:
+        total_driver_points = Driver.objects.filter(constructor=constructor).aggregate(
+            total=Sum('points')
+        )['total'] or 0
+        constructor.points = total_driver_points
+        constructor.save()
+
+    # 4. Calculate FantasyTeam points (driver_1 + driver_2 + constructor)
+    teams = FantasyTeam.objects.select_related("driver_1", "driver_2", "constructor")
+    for team in teams:
         team.points = (
-            driver1_result.points +
-            driver2_result.points +
-            constructor_points
+            team.driver_1.points +
+            team.driver_2.points +
+            team.constructor.points
         )
         team.save()
 
-    # Step 2: Update SeasonScore total for each user
-    users = FantasyTeam.objects.values_list("user", flat=True).distinct()
-    for user_id in users:
-        total = FantasyTeam.objects.filter(user__id=user_id).aggregate(
-            total=Sum("points")
-        )["total"] or 0
-
-        SeasonScore.objects.update_or_create(
-            user_id=user_id,
-            season_year=SEASON_YEAR,
-            defaults={"total_points": total}
+    # 5. Update SeasonScore
+    for team in teams:
+        score_obj, _ = SeasonScore.objects.get_or_create(
+            user=team.user,
+            season_year=2025
         )
+        score_obj.total_points = team.points
+        score_obj.save()
 
-    messages.success(request, "✅ Points assigned and season scores updated.")
-    return redirect("index")
-
+    return render(request, "fantasy/assign_points_success.html")
 
 
 

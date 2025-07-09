@@ -20,11 +20,16 @@
                     </tr>
                 </thead>
                 <tbody>
-                    {% for team in leaderboard %}
+                    {% for entry in leaderboard %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ entry.user__username }}</td>
+                            <td>{{ entry.user.username }}</td>
+                            <td>Season {{ entry.season_year }}</td>
+                            <td>{{ entry.user.fantasyteam.driver_1.name }}</td>
+                            <td>{{ entry.user.fantasyteam.driver_2.name }}</td>
+                            <td>{{ entry.user.fantasyteam.constructor.name }}</td>
                             <td>{{ entry.total_points }}</td>
+                            <td>${{ entry.user.fantasyteam.total_cost }}M</td>
                         </tr>
                     {% endfor %}
                 </tbody>

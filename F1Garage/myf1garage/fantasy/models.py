@@ -38,6 +38,7 @@ class FantasyTeam(models.Model):
     driver_2 = models.ForeignKey("Driver", on_delete=models.CASCADE, related_name="fantasy_teams_2")
     constructor = models.ForeignKey("Constructor", on_delete=models.CASCADE)
     total_cost = models.FloatField()
+    points = models.IntegerField(default=0)
 
     def __str__(self):
         return f"{self.user.username}'s Fantasy Team"
