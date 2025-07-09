@@ -33,16 +33,15 @@ class Race(models.Model):
 
 
 class FantasyTeam(models.Model):
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
-    driver_1 = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='fantasy_driver1')
-    driver_2 = models.ForeignKey(Driver, on_delete=models.CASCADE, related_name='fantasy_driver2')
-    constructor = models.ForeignKey(Constructor, on_delete=models.CASCADE)
-    race = models.ForeignKey(Race, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, on_delete=models.CASCADE)  # Each user gets one team
+    driver_1 = models.ForeignKey("Driver", on_delete=models.CASCADE, related_name="fantasy_teams_1")
+    driver_2 = models.ForeignKey("Driver", on_delete=models.CASCADE, related_name="fantasy_teams_2")
+    constructor = models.ForeignKey("Constructor", on_delete=models.CASCADE)
     total_cost = models.FloatField()
 
     def __str__(self):
-        return f"{self.user.username}'s Team for {self.race.name}"
-
+        return f"{self.user.username}'s Fantasy Team"
+    
 
 class RaceResult(models.Model):
     race = models.ForeignKey(Race, on_delete=models.CASCADE)
@@ -61,3 +60,16 @@ class TeamScore(models.Model):
 
     def __str__(self):
         return f"{self.user.username} - {self.race.name}: {self.points} pts"
+
+
+class SeasonScore(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    season_year = models.IntegerField()
+    total_points = models.IntegerField(default=0)
+
+    class Meta:
+        unique_together = ("user", "season_year")
+        ordering = ["-total_points"]
+
+    def __str__(self):
+        return f"{self.user.username} - {self.season_year}: {self.total_points} pts"

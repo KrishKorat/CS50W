@@ -4,8 +4,8 @@ from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib import messages
-from django.contrib.auth.decorators import login_required
-from .models import Driver, Constructor, FantasyTeam, Race
+from django.contrib.auth.decorators import login_required, user_passes_test
+from .models import Driver, Constructor, FantasyTeam, Race, SeasonScore, RaceResult
 from django.http import Http404
 
 from django.db.models import F, Sum, Value
@@ -19,71 +19,57 @@ def index(request):
 
 @login_required
 def create_fantasy_team(request):
-    drivers = Driver.objects.all().order_by('-cost')
-    constructors = Constructor.objects.all().order_by('-cost')
-    races = Race.objects.all()
-    MAX_BUDGET = 100
+    existing_team = FantasyTeam.objects.filter(user=request.user).first()
+
+    if existing_team:
+        # Optional: Redirect to view/edit the existing team
+        messages.info(request, "You already created a fantasy team.")
+        return redirect("view_team")
 
     if request.method == "POST":
-        d1_id = request.POST.get("driver_1")
-        d2_id = request.POST.get("driver_2")
+        driver_1_id = request.POST.get("driver_1")
+        driver_2_id = request.POST.get("driver_2")
         constructor_id = request.POST.get("constructor")
-        race_id = request.POST.get("race")
 
-        if d1_id == d2_id:
-            messages.error(request, "Please select two different drivers.")
-        else:
-            d1 = Driver.objects.get(id=d1_id)
-            d2 = Driver.objects.get(id=d2_id)
-            constructor = Constructor.objects.get(id=constructor_id)
-            race = Race.objects.get(id=race_id)
+        driver_1 = get_object_or_404(Driver, id=driver_1_id)
+        driver_2 = get_object_or_404(Driver, id=driver_2_id)
+        constructor = get_object_or_404(Constructor, id=constructor_id)
 
-            total_cost = d1.cost + d2.cost + constructor.cost
+        if driver_1 == driver_2:
+            messages.error(request, "You must choose two different drivers.")
+            return redirect("create_team")
 
-            if total_cost > MAX_BUDGET:
-                messages.error(request, f"Budget exceeded! Total: ${total_cost}M (Max: ${MAX_BUDGET}M)")
-            else:
-                team, created = FantasyTeam.objects.get_or_create(
-                    user=request.user,
-                    race=race,
-                    defaults={
-                        "driver_1": d1,
-                        "driver_2": d2,
-                        "constructor": constructor,
-                        "total_cost": total_cost,
-                    }
-                )
-                if not created:
-                    team.driver_1 = d1
-                    team.driver_2 = d2
-                    team.constructor = constructor
-                    team.total_cost = total_cost
-                    team.save()
+        team = FantasyTeam.objects.create(
+            user=request.user,
+            driver_1=driver_1,
+            driver_2=driver_2,
+            constructor=constructor,
+            total_cost=driver_1.cost + driver_2.cost + constructor.cost
+        )
 
-                messages.success(request, f"Fantasy team saved for {race.name}!")
-                return redirect("view_team", race_id=race.id)
+        messages.success(request, "Fantasy team created successfully!")
+        return redirect("view_team")
+
+    drivers = Driver.objects.all()
+    constructors = Constructor.objects.all()
 
     return render(request, "fantasy/create_team.html", {
         "drivers": drivers,
-        "constructors": constructors,
-        "races": races,
-        "budget": MAX_BUDGET,
+        "constructors": constructors
     })
 
 
 
 
-@login_required
-def view_fantasy_team(request, race_id):
-    races = Race.objects.all()
-    race = get_object_or_404(Race, id=race_id)
 
-    team = FantasyTeam.objects.filter(user=request.user, race=race).first()
+from django.shortcuts import get_object_or_404
+
+@login_required
+def view_fantasy_team(request, team_id):
+    team = get_object_or_404(FantasyTeam, id=team_id, user=request.user)
 
     return render(request, "fantasy/view_team.html", {
-        "selected_race": race,
-        "races": races,
-        "team": team,
+        "team": team
     })
 
 
@@ -91,13 +77,12 @@ def view_fantasy_team(request, race_id):
 
 @login_required
 def view_fantasy_team_redirect(request):
-    # Redirect to first available race the user has a team for
-    team = FantasyTeam.objects.filter(user=request.user).order_by('-race__date').first()
-    if team:
-        return redirect("view_team", race_id=team.race.id)
-    else:
-        messages.info(request, "Please create a fantasy team first.")
+    team = FantasyTeam.objects.filter(user=request.user).first()
+
+    if not team:
         return redirect("create_team")
+
+    return redirect("view_team", team_id=team.id)
 
 
 
@@ -109,24 +94,13 @@ def view_fantasy_team_redirect(request):
 
 @login_required
 def leaderboard(request):
-    print("🏁 Rendering leaderboard")
+    SEASON_YEAR = 2025  # You could even make this dynamic later
 
     leaderboard_data = (
-        FantasyTeam.objects
-        .values(
-            "user__username",
-            "driver_1__name",
-            "driver_2__name",
-            "constructor__name",
-            "race__name",
-            "total_cost"
-        )
-        .annotate(
-            total_points=Sum(
-                F("driver_1__points") + F("driver_2__points") + F("constructor__points")
-            )
-        )
-        .order_by("-total_points")
+        SeasonScore.objects
+        .filter(season_year=SEASON_YEAR)
+        .order_by('-total_points')
+        .values('user__username', 'total_points')
     )
 
     return render(request, "fantasy/leaderboard.html", {
@@ -144,16 +118,44 @@ def leaderboard(request):
 
 
 
-
 @login_required
+@user_passes_test(lambda u: u.is_superuser)  # Only admin can assign
 def assign_points(request):
-    if not request.user.is_superuser:
-        return redirect("index")  # deny access to non-admins
+    SEASON_YEAR = 2025
 
-    race = Race.objects.first()  # later support selecting race
-    calculate_fantasy_points(race)
-    messages.success(request, f"Points calculated and updated for {race.name}!")
-    return redirect("admin:index")
+    # Step 1: Update FantasyTeam.points per race
+    for team in FantasyTeam.objects.all():
+        try:
+            driver1_result = RaceResult.objects.get(driver=team.driver_1, race__year=SEASON_YEAR)
+            driver2_result = RaceResult.objects.get(driver=team.driver_2, race__year=SEASON_YEAR)
+        except RaceResult.DoesNotExist:
+            continue  # Skip if any result is missing
+
+        constructor_points = team.constructor.points or 0
+        team.points = (
+            driver1_result.points +
+            driver2_result.points +
+            constructor_points
+        )
+        team.save()
+
+    # Step 2: Update SeasonScore total for each user
+    users = FantasyTeam.objects.values_list("user", flat=True).distinct()
+    for user_id in users:
+        total = FantasyTeam.objects.filter(user__id=user_id).aggregate(
+            total=Sum("points")
+        )["total"] or 0
+
+        SeasonScore.objects.update_or_create(
+            user_id=user_id,
+            season_year=SEASON_YEAR,
+            defaults={"total_points": total}
+        )
+
+    messages.success(request, "✅ Points assigned and season scores updated.")
+    return redirect("index")
+
+
 
 
 def calculate_fantasy_points(race):

@@ -23,13 +23,8 @@
                     {% for team in leaderboard %}
                         <tr>
                             <td>{{ forloop.counter }}</td>
-                            <td>{{ team.user__username }}</td>
-                            <td>{{ team.race__name }}</td>
-                            <td>{{ team.driver_1__name }}</td>
-                            <td>{{ team.driver_2__name }}</td>
-                            <td>{{ team.constructor__name }}</td>
-                            <td><strong>{{ team.total_points }}</strong></td>
-                            <td>${{ team.total_cost }}M</td>
+                            <td>{{ entry.user__username }}</td>
+                            <td>{{ entry.total_points }}</td>
                         </tr>
                     {% endfor %}
                 </tbody>
