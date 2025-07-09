@@ -1,0 +1,85 @@
+{% extends "fantasy/layout.html" %}
+{% block content %}
+<div class="container mt-5 form-container">
+    <h2 class="mb-4">Edit Fantasy Team</h2>
+
+    <form method="post" id="teamForm">
+        {% csrf_token %}
+
+        <div class="mb-4">
+            <label class="form-label">Select Driver 1:</label>
+            <select name="driver_1" class="form-select driver-select" required>
+                {% for driver in drivers %}
+                    <option value="{{ driver.id }}"
+                        data-cost="{{ driver.cost }}"
+                        {% if driver.id == team.driver_1.id %}selected{% endif %}>
+                        {{ driver.name }} ({{ driver.team }}) - ${{ driver.cost }}M
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Select Driver 2:</label>
+            <select name="driver_2" class="form-select driver-select" required>
+                {% for driver in drivers %}
+                    <option value="{{ driver.id }}"
+                        data-cost="{{ driver.cost }}"
+                        {% if driver.id == team.driver_2.id %}selected{% endif %}>
+                        {{ driver.name }} ({{ driver.team }}) - ${{ driver.cost }}M
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-4">
+            <label class="form-label">Select Constructor:</label>
+            <select name="constructor" class="form-select constructor-select" required>
+                {% for constructor in constructors %}
+                    <option value="{{ constructor.id }}"
+                        data-cost="{{ constructor.cost }}"
+                        {% if constructor.id == team.constructor.id %}selected{% endif %}>
+                        {{ constructor.name }} - ${{ constructor.cost }}M
+                    </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="mb-3">
+            <strong>Remaining Budget: $<span id="remaining-budget">{{ remaining_budget }}</span>M</strong>
+        </div>
+
+        {% if error %}
+            <div class="alert alert-danger">{{ error }}</div>
+        {% endif %}
+
+        <button type="submit" class="btn btn-red">Save Changes</button>
+    </form>
+</div>
+
+<script>
+    const budgetLimit = 100;
+    const driverSelects = document.querySelectorAll('.driver-select');
+    const constructorSelect = document.querySelector('.constructor-select');
+    const budgetDisplay = document.getElementById('remaining-budget');
+
+    function updateBudget() {
+        let total = 0;
+
+        driverSelects.forEach(select => {
+            const cost = parseFloat(select.options[select.selectedIndex].dataset.cost || 0);
+            total += cost;
+        });
+
+        const constructorCost = parseFloat(constructorSelect.options[constructorSelect.selectedIndex].dataset.cost || 0);
+        total += constructorCost;
+
+        const remaining = (budgetLimit - total).toFixed(2);
+        budgetDisplay.textContent = remaining;
+    }
+
+    driverSelects.forEach(select => select.addEventListener('change', updateBudget));
+    constructorSelect.addEventListener('change', updateBudget);
+    updateBudget(); // initialize on page load
+</script>
+{% endblock %}

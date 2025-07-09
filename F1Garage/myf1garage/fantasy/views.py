@@ -70,6 +70,56 @@ def create_fantasy_team(request):
 
 
 
+@login_required
+def edit_fantasy_team(request):
+    user = request.user
+    team = get_object_or_404(FantasyTeam, user=user)
+
+    drivers = Driver.objects.all().order_by('-cost')
+    constructors = Constructor.objects.all().order_by('-cost')
+
+    if request.method == "POST":
+        driver_1_id = request.POST.get("driver_1")
+        driver_2_id = request.POST.get("driver_2")
+        constructor_id = request.POST.get("constructor")
+
+        driver_1 = get_object_or_404(Driver, id=driver_1_id)
+        driver_2 = get_object_or_404(Driver, id=driver_2_id)
+        constructor = get_object_or_404(Constructor, id=constructor_id)
+
+        total_cost = driver_1.cost + driver_2.cost + constructor.cost
+
+        if total_cost > 100:
+            return render(request, "fantasy/edit_team.html", {
+                "drivers": drivers,
+                "constructors": constructors,
+                "team": team,
+                "error": "Budget exceeded! Choose cheaper team members.",
+                "remaining_budget": 100 - total_cost
+            })
+
+        # Update team
+        team.driver_1 = driver_1
+        team.driver_2 = driver_2
+        team.constructor = constructor
+        team.total_cost = total_cost
+        team.save()
+
+        return redirect("view_team_redirect")
+
+    return render(request, "fantasy/edit_team.html", {
+        "drivers": drivers,
+        "constructors": constructors,
+        "team": team,
+        "remaining_budget": 100 - team.total_cost
+    })
+
+
+
+
+
+
+
 
 from django.shortcuts import get_object_or_404
 
