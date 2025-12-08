@@ -1,12 +1,9 @@
----
-
 # 🏎️ MyF1Garage — Fantasy Formula 1 Web Application
 
 MyF1Garage is a full-stack Django web application that allows users to create their own fantasy Formula 1 teams, earn points based on real race results, and compete on a global leaderboard. Users strategically select two drivers and one constructor while managing a budget cap. The app dynamically assigns points after each race and updates both team standings and the seasonal leaderboard.
 
 Video Demo : https://youtu.be/Xig3vI3bIa4
 
----
 
 ## Distinctiveness and Complexity
 
